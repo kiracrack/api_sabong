@@ -1,0 +1,16 @@
+{
+    "host": "obslabz.com",
+    "username": "sbg@obslabz.com",
+    "password": "12Sysadmin34",
+    "remotePath": "",
+    "protocol": "ftp",
+    "port": 21,
+    "fileNameEncoding": "utf8",
+    "autoUpload": true,
+    "autoDelete": false,
+    "autoDownload": false,
+    "ignore": [
+        ".git",
+        "/.vscode"
+    ]
+}
