@@ -73,7 +73,7 @@ try{
 
         if(operatorid.equals(GlobalDefaultOperator)){
             JSONObject apiObj = new JSONObject();
-            apiObj.put("plasada", GlobalFightCommission);
+            apiObj.put("plasada", GlobalPlasada);
             apiObj = api_current_fight_summary(apiObj, fightkey);
             PusherPost(eventid, apiObj);
         }

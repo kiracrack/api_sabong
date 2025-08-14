@@ -1,9 +1,5 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xLibrary.jsp" %>
-<%@ include file="../module/xRecordModule.jsp" %>
-<%@ include file="../module/xWebModule.jsp" %>
-<%@ include file="../module/xRecordClass.jsp" %>
-<%@ include file="../module/xSabongModule.jsp" %>
+ 
 <%
     JSONObject mainObj = new JSONObject();
     JSONObject apiObj = new JSONObject();
@@ -14,24 +10,15 @@ try{
     String sessionid = request.getParameter("sessionid");
 
     if(x.isEmpty() || userid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
-
+        
     }else if(isAdminSessionExpired(userid,sessionid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalExpiredSessionMessageDashboard);
-        mainObj.put("errorcode", "session");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalExpiredSessionMessageDashboard, "session"));
         return;
-    
+        
     }else if(isAdminAccountBlocked(userid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalAdminAccountBlocked);
-        mainObj.put("errorcode", "blocked");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalAdminAccountBlocked, "blocked"));
         return;
     }
 
@@ -39,60 +26,42 @@ try{
         Boolean disable = Boolean.parseBoolean(request.getParameter("disable"));
     
         ExecuteQuery("UPDATE tblgeneralsettings set under_maintenance="+disable+"");
-        mainObj.put("message",(disable?  "Server maintenance mode sucessfully enabled" : "Server maintenance mode sucessfully disabled"));
         LogActivity(userid,(disable? "set emergency disabled app" : "set app enabled"));   
         
-        mainObj = getGeneralSettings(mainObj);
-        mainObj.put("status", "OK");
-        out.print(mainObj);
+        mainObj = general_settings(mainObj);
+        out.print(Success(mainObj, (disable?  "Server maintenance mode sucessfully enabled" : "Server maintenance mode sucessfully disabled"))); 
 
         if(disable){
             apiObj.put("maintenance", disable);
             apiObj.put("title", "Notice");
             apiObj.put("message", globalMaintainanceMessage);
-            PusherPost("global", apiObj);
+            //PusherPost("global", apiObj);
         }
         
     
     }else if(x.equals("clear_ledger_logs")){
-        
-        if(!globalEnableMaintainance){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message","Cannot proceed clearing game ledger logs! Please enable maintenance mode");
-            mainObj.put("errorcode", "101");
-            out.print(mainObj);
+        if(!globalMaintenance){
+            out.print(Error(mainObj, "Cannot proceed clearing game ledger logs! Please enable maintenance mode", "101"));
             return;
         }
 
         ExecuteQuery("TRUNCATE tblcreditledgerlogs");
         LogActivity(userid,"cleared game ledger logs");   
-        
-        mainObj.put("status", "OK");
-        mainObj.put("message","Game ledger successfully cleared");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Game ledger successfully cleared")); 
 
     }else if(x.equals("clear_dummy_transaction")){
-        if(!globalEnableMaintainance){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message","Cannot proceed clearing dummy transaction! Please enable maintenance mode");
-            mainObj.put("errorcode", "101");
-            out.print(mainObj);
+        if(!globalMaintenance){
+            out.print(Error(mainObj, "Cannot proceed clearing dummy transaction! Please enable maintenance mode", "100"));
             return;
         }
 
-        ExecuteQuery("delete from tblfightbets2 where dummy=1;");
-        ExecuteQuery("delete FROM tblcreditledger where accountid='101-00017';");
-        ExecuteQuery("delete FROM tblcreditledger where accountid='101-00018';");
-        ExecuteQuery("delete FROM tblcreditledger where accountid='102-00002';");
-        ExecuteQuery("delete FROM tblcreditledger where accountid='102-00003';");
+        ExecuteQuery("truncate tblfightbetsdummy");
         LogActivity(userid,"cleared dummy transaction");   
         
-        mainObj.put("status", "OK");
-        mainObj.put("message","Dummy transaction successfully cleared");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Dummy transaction successfully cleared")); 
 
     }else if(x.equals("reverse_result")){
-        String fightkey = request.getParameter("fightkey");
+        /*String fightkey = request.getParameter("fightkey");
 
         if(isCancelled(fightkey)){
             mainObj.put("status", "ERROR");
@@ -177,8 +146,8 @@ try{
                         + " win_amount="+fs.totalWinAmount+", " 
                         + " lose_amount="+fs.totalLoseAmount+", " 
                         + " payout_amount="+fs.totalPayout+", " 
-                        + " gros_ge_rate='"+GlobalFightCommission+"', " 
-                        + " gros_ge_total="+ (isDraw || isCancelled ? 0 : (totalPlayerBets) * GlobalFightCommission) +", " 
+                        + " gros_ge_rate='"+GlobalPlasada+"', " 
+                        + " gros_ge_total="+ (isDraw || isCancelled ? 0 : (totalPlayerBets) * GlobalPlasada) +", " 
                         + " gros_op_rate='"+operator.op_com_rate +"', " 
                         + " gros_op_total="+(isDraw || isCancelled ? 0 : (totalPlayerBets) * operator.op_com_rate )+", " 
                         + " gros_be_rate='"+operator.be_com_rate+"', " 
@@ -212,9 +181,9 @@ try{
         apiObj = api_event_info(apiObj, eventid);
         apiObj = api_result_info(apiObj, eventid);
         PusherPost(eventid, apiObj);
-
+        */
     }else if(x.equals("cancel_result")){
-        String fightkey = request.getParameter("fightkey");
+        /*String fightkey = request.getParameter("fightkey");
 
         if(isCancelled(fightkey)){
             mainObj.put("status", "ERROR");
@@ -228,7 +197,7 @@ try{
         String message_return_winning = "auto deduct - arena error posting result (fight#"+fsd.fightnumber+" cancelled)";
         String message_return_bets = "return bets - arena error posting result (fight#"+fsd.fightnumber+" cancelled)";
 
-        /*perform deduct winning score*/
+        //perform deduct winning score
         ResultSet rst_deduct = null;  
         rst_deduct =  SelectQuery("SELECT operatorid, accountid, (select fullname from tblsubscriber where accountid=a.accountid) as fullname, ROUND(sum(if(win,payout_amount,0)),2) as totalpayout FROM `tblfightbets2` as a where fightkey='"+fightkey+"' and win=1 group by accountid");
         while(rst_deduct.next()){
@@ -241,7 +210,7 @@ try{
         }
         rst_deduct.close();
 
-        /*perform return bet score*/
+        //perform return bet score
         ResultSet rst_add = null;  
         rst_add =  SelectQuery("SELECT operatorid, accountid, (select fullname from tblsubscriber where accountid=a.accountid) as fullname, sum(bet_amount) as totalbets FROM `tblfightbets2` as a where fightkey='"+fightkey+"' group by accountid");
         while(rst_add.next()){
@@ -267,81 +236,58 @@ try{
         
         mainObj.put("status", "OK");
         mainObj.put("message","Winning scores has been reversed and result successfully cancelled!");
-        out.print(mainObj);
+        out.print(mainObj); */
        
     }else if(x.equals("fight_result_logs")){
-        String operatorid = request.getParameter("operatorid");
         String datefrom = request.getParameter("datefrom");
         String dateto = request.getParameter("dateto");
 
-        mainObj.put("status", "OK");
-        mainObj = LoadFightResultLogs(mainObj, operatorid, datefrom, dateto);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        mainObj = LoadFightResultLogs(mainObj, datefrom, dateto);
+        out.print(Success(mainObj, "Successfull Synchronized")); 
 
     }else if(x.equals("fight_transaction")){
-        String operatorid = request.getParameter("operatorid");
         String fightkey = request.getParameter("fightkey");
         String mode = request.getParameter("mode");
 
-        mainObj.put("status", "OK");
-        mainObj = LoadFightResultDetails(mainObj, operatorid, fightkey);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        mainObj = LoadFightResultDetails(mainObj, fightkey);
+        out.print(Success(mainObj, "Successfull Synchronized")); 
 
     }else if(x.equals("cancelled_fight_logs")){
         String datefrom = request.getParameter("datefrom");
         String dateto = request.getParameter("dateto");
 
-        mainObj.put("status", "OK");
         mainObj = LoadCancelledFightLogs(mainObj, datefrom, dateto);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized")); 
+
 
     }else if(x.equals("missing_bet_logs")){
-        String operatorid = request.getParameter("operatorid");
         String datefrom = request.getParameter("datefrom");
         String dateto = request.getParameter("dateto");
 
-        mainObj.put("status", "OK");
-        mainObj = LoadMissingBetLogs(mainObj, operatorid, datefrom, dateto);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        mainObj = LoadMissingBetLogs(mainObj, datefrom, dateto);
+        out.print(Success(mainObj, "Successfull Synchronized")); 
 
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
     }
+
 }catch (Exception e){
-    mainObj.put("status", "ERROR");
-    mainObj.put("message", e.toString());
-    mainObj.put("errorcode", "400");
-    out.print(mainObj);
-    logError("dashboard-x-tools",e.toString());
+      out.print(Error(mainObj, e.toString(), "400"));
+      logError("dashboard-x-tools",e.toString());
 }
 %>
 
 <%!public boolean isCancelled(String fightkey) {
-    boolean cancelled = false;
-    if(CountQry("tblfightsummary", "fightkey='"+fightkey+"' and result='C'") > 0){
-        cancelled = true;
-    }
-    return cancelled;
+    return CountQry("tblfightsummary", "fightkey='"+fightkey+"' and result='C'") > 0;
   }
 %>
 
 <%!public boolean isTransactionFound(String fightkey) {
-    boolean found = false;
-    if(CountQry("tblfightbets", "fightkey='"+fightkey+"'") > 0){
-        found = true;
-    }
-    return found;
+    return CountQry("tblfightbets", "fightkey='"+fightkey+"'") > 0;
   }
 %>
 
-<%!public JSONObject LoadFightResultLogs(JSONObject mainObj, String operatorid, String datefrom, String dateto) {
+<%!public JSONObject LoadFightResultLogs(JSONObject mainObj, String datefrom, String dateto) {
     mainObj = DBtoJson(mainObj, "fight_result", "select eventid,fightkey,fightnumber, case  when result='M' then 'MERON'  when result='D' then 'DRAW' when result='W' then 'WALA' else 'CANCELLED' end as result, "
                             + " date_format(datetrn,'%Y-%m-%d') as 'date', " 
                             + " date_format(datetrn,'%r') as 'time' " 
@@ -350,7 +296,7 @@ try{
 }
 %>
 
-<%!public JSONObject LoadFightResultDetails(JSONObject mainObj, String operatorid, String fightkey) {
+<%!public JSONObject LoadFightResultDetails(JSONObject mainObj, String fightkey) {
     mainObj = DBtoJson(mainObj, "fight_transaction", "select accountid, " 
                               + " (select fullname from tblsubscriber where accountid=a.accountid) as fullname, "
                               + " eventid, " 
@@ -363,7 +309,7 @@ try{
                               + " payout_amount, "
                               + " date_format(datetrn,'%Y-%m-%d') as 'date', " 
                               + " date_format(datetrn,'%r') as 'time' "
-                              + " from tblfightbets2 as a where operatorid='"+operatorid+"' and fightkey='"+fightkey+"' and dummy=0 order by id asc");
+                              + " from tblfightbets2 as a where fightkey='"+fightkey+"' and dummy=0 order by id asc");
     return mainObj;
 }
 %>
@@ -381,32 +327,17 @@ try{
 %>
 
 
-<%!public JSONObject LoadMissingBetLogs(JSONObject mainObj, String operatorid,  String datefrom, String dateto) {
+<%!public JSONObject LoadMissingBetLogs(JSONObject mainObj, String datefrom, String dateto) {
     mainObj = DBtoJson(mainObj, "missing_bet", "select  date_format(datetrn,'%Y-%m-%d') as 'date', eventid, fightkey, fightnumber, " 
                               + " count(*) totalbettors, "
                               + " sum(bet_amount) totalbets "
-                              + " from tblfightbets as a where operatorid='"+operatorid+"' and "
-                              + " fightkey not in (select fightkey from tblevent where event_active=1) and dummy=0 and " 
+                              + " from tblfightbets as a where fightkey not in (select fightkey from tblevent where event_active=1) and dummy=0 and " 
                               + " date_format(datetrn,'%Y-%m-%d') between '"+datefrom+"' and '"+dateto+"' group by fightkey");
     return mainObj;
 }
 %>
 
-<%!public void ExecuteReverseBalance(String fightkey){
-    try{
-        ResultSet rst = null; 
-        rst = SelectQuery("select accountid, credit from tblcreditledger where appreference='"+fightkey+"'");
-        while(rst.next()){
-            String uid = rst.getString("accountid"); 
-            double amount = rst.getDouble("credit");
-            ReverseBalance(uid, amount);
-        }
-        rst.close();
-    }catch(SQLException e){
-        logError("ExecuteReverseBalance",e.toString());
-    }
-}%>
-
+ 
 <%!public void RestoreBetsTable(String fightkey) {
     if(CountQry("tblfightbets2", "fightkey='"+fightkey+"'") > 0){
         ExecuteResult("DELETE from tblfightbets where fightkey='"+fightkey+"'");

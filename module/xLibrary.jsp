@@ -66,61 +66,7 @@
   return mainObj;
   }
  %>
-
-<%!public String AttachedPhoto(ServletContext application, String folder, String imageString, String filename) {
-     String PhotoUrl = "";
-    if(imageString.length() > 0) {
-        String directory = application.getRealPath((GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory)+"/images/"+folder+"");
-        File theDir = new File(directory);
-        if (!theDir.exists()){
-            theDir.mkdirs();
-        }
-        
-        String PhotoLocation = directory + "/"+filename+".png";
-        PhotoUrl = GlobalHostName + (GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory)+"/images/"+folder+"/"+filename+".png";
-        byte[] data = DatatypeConverter.parseBase64Binary(imageString);
-        File file= new File(PhotoLocation);
-        
-        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
-            outputStream.write(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-            PhotoUrl = "";
-        }
-    }else{
-         PhotoUrl = "";
-    }
-    return PhotoUrl;
-}
-%>
-
-<%!public String AttachedReceipt(ServletContext application, String folder, String imageString, String filename) {
-     String PhotoUrl = "";
-    if(imageString.length() > 0) {
-        String directory = application.getRealPath((GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory)+"/images/"+folder+"/" + CurrentMonth());
-        File theDir = new File(directory);
-        if (!theDir.exists()){
-            theDir.mkdirs();
-        }
-        
-        String PhotoLocation = directory + "/"+filename+".png";
-        PhotoUrl = GlobalHostName + (GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory)+"/images/"+folder + "/" + CurrentMonth()+ "/"+filename+".png";
-        byte[] data = DatatypeConverter.parseBase64Binary(imageString);
-        File file= new File(PhotoLocation);
-        
-        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
-            outputStream.write(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-            PhotoUrl = "";
-        }
-    }else{
-         PhotoUrl = "";
-    }
-    return PhotoUrl;
-}
-%>
-
+ 
 <%!public String getRandomAlphaNumeric() {
     Random rnd = new Random();
     int number = rnd.nextInt(999999);
@@ -201,13 +147,30 @@
 }
 %>
 
-<%!public String getAccountReferralCode() {
-   	String referralcode = "";
-    for (int i = 1; i <= 10; ++i) {
-        referralcode = RandomStringUtils.randomAlphabetic(2).toUpperCase()+RandomStringUtils.randomNumeric(4).toUpperCase();
-        if (CountQry("tblsubscriber", "referralcode='"+referralcode+"'") == 0) break;  
+<%!public String AttachedPhoto(ServletContext application, String folder, String imageString, String filename) {
+     String PhotoUrl = "";
+    if(imageString.length() > 0) {
+        String directory = application.getRealPath("/images/"+folder+"");
+        File theDir = new File(directory);
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
+        
+        String PhotoLocation = directory + "/"+filename+".png";
+        PhotoUrl = GlobalHostName + "/images/"+folder+"/"+filename+".png";
+        byte[] data = DatatypeConverter.parseBase64Binary(imageString);
+        File file= new File(PhotoLocation);
+        
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+            outputStream.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+            PhotoUrl = "";
+        }
+    }else{
+         PhotoUrl = "";
     }
-    return referralcode;
+    return PhotoUrl;
 }
 %>
 
@@ -216,139 +179,6 @@
 }
 %>
 
-<%!public void LogGameStatistic(String accountid, String game_type, String gameid, String gamename, String imgurl) {
-    if(CountQry("tblgamestatistics", "accountid='"+accountid+"' and game_type='"+game_type+"' and gameid='"+gameid+"'") > 0) {
-        ExecuteQuery("UPDATE tblgamestatistics set play_count=play_count+1, lastdateplayed=current_timestamp,imgurl='"+imgurl+"' where accountid='"+accountid+"' and game_type='"+game_type+"' and gameid='"+gameid+"' ");
-    }else{
-        ExecuteQuery("insert into tblgamestatistics set accountid='"+accountid+"', game_type='"+game_type+"', gameid='"+gameid+"', gamename=lcase('"+rchar(gamename.toString())+"'), imgurl='"+imgurl+"',play_count=1, lastdateplayed=current_timestamp ");
-    }
- }
- %>
-
-<%!public boolean LogLedger(final String accountid, String sessionid, String appreference,String transactionno, String description, double debit, double credit, String trnby) {
-    if(!isLogLedgerFound(accountid, sessionid, appreference, description, debit, credit, trnby)){
-        LogLedgerTransaction(accountid, sessionid, appreference, description, debit, credit, trnby);
-        ExecuteLogLedger(accountid, sessionid, appreference, transactionno, description, debit, credit, trnby);
-    }
-    return true;
-}
-%>
-
-<%!public boolean LogLedgerDirect(final String accountid, String sessionid, String appreference,String transactionno, String description, double debit, double credit, String trnby) {
-    ExecuteLogLedger(accountid, sessionid, appreference, transactionno, description, debit, credit, trnby);
-    return true;
-}
-%>
-
-<%!public void ExecuteLogLedger(String accountid, String sessionid, String appreference, String transactionno, String description, double debit, double credit, String trnby){
-    try {
-        ResultSet rst_db = null; double currentbal = 0; double newbal = 0;
-        rst_db =  SelectQuery("select creditbal from tblsubscriber where accountid='"+accountid+"' limit 1");
-        while(rst_db.next()){
-                currentbal = rst_db.getDouble("creditbal");
-        }
-        rst_db.close();
-        
-        if(debit > 0){
-            ExecuteLedger("update tblsubscriber set creditbal=ROUND(creditbal-"+debit+",2) where accountid='"+accountid+"' ");
-        }
-
-        if(credit > 0){
-            ExecuteLedger("update tblsubscriber set creditbal=ROUND(creditbal+"+credit+",2) where accountid='"+accountid+"' ");
-        }
-        
-        if(currentbal==0){
-            newbal = credit - debit;
-        }else{
-            newbal = (currentbal + credit) - debit;
-        }
-        ExecuteLedger("insert into tblcreditledger set accountid='"+accountid+"',sessionid='"+sessionid+"',appreference='"+appreference+"',transactionno='"+transactionno+"', description='"+rchar(description)+"',prevbal=ROUND("+currentbal+",2),debit=ROUND("+debit+",2),credit=ROUND("+credit+",2),currentbal=ROUND("+newbal+",2),datetrn=current_timestamp,trnby='"+trnby+"'");
-	}catch(Exception e){
-		logError("LogLedger",e.toString());
-	}
-}%>
-
-<%!public void ReverseBalance(String accountid, double amount){
-    if(amount > 0){
-        ExecuteLedger("update tblsubscriber set creditbal=ROUND(creditbal-"+amount+",2) where accountid='"+accountid+"' ");
-    }
-}%>
-
-<%!public boolean isLogLedgerFound(String accountid, String sessionid, String appreference, String description, double debit, double credit, String trnby){
-    boolean recordFound = false;
-    if(CountQry("tblcreditledgerlogs", "accountid='"+accountid+"' and sessionid='"+sessionid+"' and appreference='"+appreference+"' and description='"+rchar(description)+"' and debit='"+debit+"' and credit='"+credit+"' and trnby='"+trnby+"'") > 0) {
-        recordFound = true;
-    }
-    return recordFound;
-}%>
-
-<%!public void LogLedgerTransaction(String accountid, String sessionid, String appreference, String description, double debit, double credit, String trnby){
-    ExecuteResult("INSERT into tblcreditledgerlogs set accountid='"+accountid+"', sessionid='"+sessionid+"', appreference='"+appreference+"', description='"+rchar(description)+"', debit='"+debit+"', credit='"+credit+"', trnby='"+trnby+"'");
-}%>
-
-
-<%!public boolean LogLoginSession(String userid, String sessionid, String deviceid, String devicename, String ipaddress) {
-    try {
-        ExecuteQuery("update tblsubscriber set accessattempt=0, accesslocklevel=0, accesslockexpiry=null, accesslockdescription='', sessionid='"+sessionid+"',deviceid='"+deviceid+"',devicename='"+rchar(devicename)+"', lastlogindate=current_timestamp,ipaddress='"+ipaddress+"' where accountid='"+userid+"' ");
-        ExecuteQuery("insert into tblloginsession set userid='"+userid+"',sessionid='"+sessionid+"',deviceid='"+deviceid+"',devicename='"+devicename+"', timein=current_timestamp");
-      return true;
-	}catch(Exception e){
-		logError("LogLoginSession",e.toString());
-		return false;
-	}
-}
-%>
-
-<%!public String HtmlMasterReportPage(ServletContext application, String report) {
-    String reportURL = "";
-    try {
-            File fNew= new File(application.getRealPath((GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory) + "/report/template/"), "downline.html");
-            BufferedReader br = new BufferedReader(new FileReader(fNew));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-                while (line != null) {
-                    sb.append(line);
-                    sb.append(System.lineSeparator());
-                    line = br.readLine();
-                }
-            String htmlstring = sb.toString();
-            htmlstring = htmlstring.replace("[report]", report);
-
-            
-            reportURL = GlobalHostName + (GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory)+"/report/downline1.html";
-            String directory = application.getRealPath((GlobalHostDirectory.equals("")?"":"/"+GlobalHostDirectory)+"/report/downline1.html");
-            File theFile = new File(directory);
-            if (theFile.exists()){
-                theFile.delete();
-            }
-
-            FileWriter wr = new FileWriter(new File(directory));
-            wr.write(htmlstring);
-            wr.close();
-
-	}catch(Exception e){
-		logError("app-x-report-downline",e.getMessage());
-	}
-        return reportURL;
-  }
-%>
-
-<%!public void ExecuteSetScore(String operatorid, String sessionid, String appreference, String accountid, String fullname, String trntype, double amount, String reference, String userid){
-    String transactionno = getOperatorSeriesID(operatorid,"series_load_credit");
-
-    AccountInfo info = new AccountInfo(accountid);
-    ExecuteQuery("insert into tblcreditloadlogs set appreference='"+appreference+"',operatorid='"+operatorid+"',transactionno='"+transactionno+"',accountid='"+accountid+"',masteragentid='"+info.masteragentid+"',agentid='"+info.agentid+"',fullname='"+rchar(fullname)+"',trntype='"+trntype+"',amount='"+amount+"',reference='"+rchar(reference)+"',datetrn=current_timestamp,trnby='"+userid+"' ");
-    
-    if(trntype.equals("DEDUCT")){
-        String description = (reference.length() > 0 ? reference.toLowerCase() : "deduct score by operator");
-        LogLedger(accountid,sessionid,appreference,transactionno,rchar(description),amount,0, userid);
-
-    }else{
-        String description = (reference.length() > 0 ? reference.toLowerCase() : "added score by operator");
-        LogLedger(accountid,sessionid,appreference,transactionno,rchar(description),0,amount, userid);
-    }
-}%>
-
  <%!public String CurrentMonth(){
     LocalDateTime myDateObj = LocalDateTime.now();
     DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MM");
@@ -356,10 +186,24 @@
   }
 %>
 
-<%!public JSONObject ErrorResponse(JSONObject mainObj, String message, String errorcode) {
+<%!public JSONObject Success(JSONObject mainObj, String message) {
+    mainObj.put("status", "OK");
+    mainObj.put("message", message); 
+    return mainObj;
+ }
+ %>
+
+ <%!public JSONObject Error(JSONObject mainObj, String message, String errorcode) {
     mainObj.put("status", "ERROR");
     mainObj.put("message", message);
     mainObj.put("errorcode", errorcode);
+    return mainObj;
+ }
+ %>
+
+ <%!public JSONObject Status(JSONObject mainObj, String Status, String message) {
+    mainObj.put("status", Status);
+    mainObj.put("message", message);  
     return mainObj;
  }
  %>

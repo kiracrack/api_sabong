@@ -59,27 +59,21 @@
     }
 }%>
 
-<%!public class OperatorInfo{
-    public String betwacherid, testaccountid, dummy_account_1, dummy_account_2;
+<%!public class GeneralSettings{
+    public String betwacherid, dummy_account_1, dummy_account_2;
     public boolean enable_agent_commission, enableBetWatcher, betwatcherincludedummybets, enablebetbalancer;
     public double minbet, maxbet, op_com_rate, be_com_rate, draw_rate, betwatchermaxamount, betwatcherodds, betbalanceramount;
-    public OperatorInfo(String operatorid){
+    public GeneralSettings(){
         try{
             ResultSet rst = null; 
-            rst =  SelectQuery("select * from tbloperator where companyid='"+operatorid+"'");
+            rst =  SelectQuery("select * from tblgeneralsettings");
             while(rst.next()){
                 this.betwacherid = rst.getString("betwacherid");
-                this.testaccountid = rst.getString("testaccountid");
                 this.dummy_account_1 = rst.getString("dummy_account_1");
                 this.dummy_account_2 = rst.getString("dummy_account_2");
 
-                this.enable_agent_commission = rst.getBoolean("enable_agent_commission");
-                
                 this.minbet = rst.getDouble("minbet");
                 this.maxbet = rst.getDouble("maxbet");
-
-                this.op_com_rate = rst.getDouble("op_com_rate");
-                this.be_com_rate = rst.getDouble("be_com_rate");
                 this.draw_rate = rst.getDouble("draw_rate");
 
                 this.enableBetWatcher = rst.getBoolean("enablebetwatcher");
@@ -101,14 +95,14 @@
 <%!public class FinalBets{
     public double totalMeron, totalWala, oddMeron, oddWala;
 
-    public FinalBets(String operatorid, String fightkey){
+    public FinalBets(String fightkey){
         try{
             ResultSet rst = null; 
             double totalAllBets = 0; double ratioMeron = 0; double ratioWala = 0;
 
             rst =  SelectQuery("select sum(if(bet_choice='M', bet_amount, 0)) as total_meron, " 
                                 + " sum(if(bet_choice='W', bet_amount, 0)) as total_wala"
-                                + " from tblfightbets where fightkey='"+fightkey+"' and operatorid='"+operatorid+"'");
+                                + " from tblfightbets where fightkey='"+fightkey+"'");
             while(rst.next()){
                 this.totalMeron = rst.getDouble("total_meron");
                 this.totalWala = rst.getDouble("total_wala");
@@ -117,226 +111,11 @@
                 ratioMeron =  totalAllBets / totalMeron;
                 ratioWala =  totalAllBets / totalWala;
 
-                oddMeron = ratioMeron-(ratioMeron * GlobalFightCommission);
-                oddWala = ratioWala-(ratioWala * GlobalFightCommission);
+                oddMeron = ratioMeron-(ratioMeron * GlobalPlasada);
+                oddWala = ratioWala-(ratioWala * GlobalPlasada);
             }
         }catch(SQLException e){
             logError("class-final-bets",e.toString());
-        }
-    }
-}%>
-
-<%!public class AccountInfo{
-    public String fullname, username, mobilenumber, sessionid, masteragentid, referralcode;
-    public String blockedreason, imageurl, ipaddress, date_registered, date_now, time_now,;
-    public double creditbal; 
-    public boolean isadmin, blocked, isnewaccount;
-    
-    public int totalonline;
-    public AccountInfo(String accountid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select *, ifnull(photourl,'') as imageurl, " +
-                                " date_format(dateregistered, '%M %d, %Y') as date_registered, " +
-                                " date_format(current_timestamp, '%Y-%m-%d') as date_now, " +
-                                " date_format(current_timestamp, '%r') as time_now " +
-                                " from tblsubscriber as a where accountid='"+accountid+"'");
-            while(rst.next()){
-                this.fullname = rst.getString("fullname");
-                this.username = rst.getString("username");
-                this.mobilenumber = rst.getString("mobilenumber");
-                this.sessionid = rst.getString("sessionid");
-                this.ipaddress = rst.getString("ipaddress");
-                this.referralcode = rst.getString("referralcode");
-                this.blockedreason = rst.getString("blockedreason");
-                this.imageurl = rst.getString("imageurl");
-                this.date_registered = rst.getString("date_registered");
-                this.date_now = rst.getString("date_now");
-                this.time_now = rst.getString("time_now");
-                this.creditbal = rst.getDouble("creditbal");
-
-                this.isadmin = rst.getBoolean("isadmin");
-                this.blocked = rst.getBoolean("blocked");
-                this.isnewaccount = rst.getBoolean("isnewaccount");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-account-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class WinStrikeChecker{
-    public String cockfight_eventid;
-    public int cockfight_fightno;
-    public boolean winstrike_available, winstrike_enabled;
-    public WinStrikeChecker(String accountid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select cockfight_fightno, cockfight_eventid, winstrike_available, winstrike_enabled from tblsubscriber where accountid='"+accountid+"'");
-            while(rst.next()){
-                this.cockfight_fightno = rst.getInt("cockfight_fightno");
-                this.cockfight_eventid = rst.getString("cockfight_eventid");
-                this.winstrike_available = rst.getBoolean("winstrike_available");
-                this.winstrike_enabled = rst.getBoolean("winstrike_enabled");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-win-strike-checker",e.toString());
-        }
-    }
-}%>
-
-<%!public class WinstrikeCounter{
-    public int silver, gold, platinum, totalstrike;
-    public WinstrikeCounter(String eventid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select winstrike_silver, winstrike_gold, winstrike_platinum from tblevent where eventid='"+eventid+"'");
-            while(rst.next()){
-                this.silver = rst.getInt("winstrike_silver");
-                this.gold = rst.getInt("winstrike_gold");
-                this.platinum = rst.getInt("winstrike_platinum");
-                this.totalstrike = silver + gold + platinum;
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-winstrike-counter",e.toString());
-        }
-    }
-}%>
-
-<%!public class WinStrikeBonus{ 
-    public double bonus_amount, min_bet;
-    public WinStrikeBonus(String category){
-         
-        if(category.equals("silver")){
-            this.bonus_amount = 188; 
-            this.min_bet = 30;
-        }else if(category.equals("gold")){
-            this.bonus_amount = 388; 
-            this.min_bet = 60;
-        }else if(category.equals("platinum")){
-            this.bonus_amount = 688;
-            this.min_bet = 100;
-        }
-    }
-}%>
-
-<%!public class ReferralInfo{
-    public int totalaccount;
-    public ReferralInfo(String userid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select count(*) as totalaccount from tblsubscriber where agentid='"+userid+"'");
-            while(rst.next()){
-                this.totalaccount =  rst.getInt("totalaccount");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-referral-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class ReferralBonus{
-    public double amount;
-    public ReferralBonus(String userid, String datefrom, String dateto){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select ifnull(sum(referral_bonus),0) as amount from tblreferral where referredid='"+userid+"' and date_format(datedeposit, '%Y-%m-%d') between '"+datefrom+"' and '"+dateto+"'");
-            while(rst.next()){
-                this.amount =  rst.getDouble("amount");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-referral-bonus",e.toString());
-        }
-    }
-}%>
-
-<%!public class BankInfo{
-    public String remittanceid, accountnumber, accountname;
-    public boolean isoperator;
-    public BankInfo(String bankid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select * from tblbankaccounts where id='"+bankid+"'");
-            while(rst.next()){
-                this.remittanceid =  rst.getString("remittanceid");
-                this.accountnumber =  rst.getString("accountnumber");
-                this.accountname =  rst.getString("accountname");
-                this.isoperator =  rst.getBoolean("isoperator");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-bank-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class OperatorBankInfo{
-    public String bankid, accountnumber, accountname;
-    public OperatorBankInfo(String bankcode){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select * from tblbankoperator where code='"+bankcode+"'");
-            while(rst.next()){
-                this.bankid =  rst.getString("bankid");
-                this.accountnumber =  rst.getString("accountnumber");
-                this.accountname =  rst.getString("accountname"); 
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-operator-bank-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class RemitInfo{
-    public boolean isbank;
-    public RemitInfo(String rid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select * from tblbanks where id='"+rid+"'");
-            while(rst.next()){
-                this.isbank =  rst.getBoolean("isbank");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-remittance-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class AccountBalance{
-    public double creditbal;
-    public AccountBalance(String accountid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select creditbal from tblsubscriber as a where accountid='"+accountid+"'");
-            while(rst.next()){
-                this.creditbal = rst.getDouble("creditbal");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-account-balance",e.toString());
-        }
-    }
-}%>
-
-<%!public class FreeCreditMaster{
-    public String accountid;
-    public FreeCreditMaster(){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("SELECT * FROM `tblsubscriber` where isfreecredit=1 and masteragent=1;");
-            while(rst.next()){
-                this.accountid = rst.getString("accountid");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-free-credit-master",e.toString());
         }
     }
 }%>
@@ -357,53 +136,11 @@
         }
     }
 }%>
-
-<%!public class RequestNotification{
-    public int count_score_request, count_new_account, count_deposit_request, count_withdrawal_request;
-    public RequestNotification(String accountid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select (select count(*) from tblcreditrequest where confirmed=0 and cancelled=0 and agentid=a.accountid) as count_score_request, "
-                    + " (select count(*) from tblregistration where approved=0 and deleted=0 and agentid=a.accountid) as count_new_account, "
-                    + " (select count(*) from tbldeposits where confirmed=0 and cancelled=0 and agentid=a.accountid) as count_deposit_request, "
-                    + " (select count(*) from tblwithdrawal where confirmed=0 and cancelled=0 and agentid=a.accountid) as count_withdrawal_request "
-                    + " from tblsubscriber as a where accountid='"+accountid+"'");
-            while(rst.next()){
-                this.count_score_request = rst.getInt("count_score_request");
-                this.count_new_account = rst.getInt("count_new_account");
-                this.count_deposit_request = rst.getInt("count_deposit_request");
-                this.count_withdrawal_request = rst.getInt("count_withdrawal_request");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-request-notification",e.toString());
-        }
-    }
-}%>
-
-<%!public class AgentReferralInfo{
-    public String accountid, operatorid, masteragentid, agentid;
-    public AgentReferralInfo(String referralcode){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select * from tblsubscriber as a where referralcode='"+referralcode+"'");
-            while(rst.next()){
-                this.accountid = rst.getString("accountid");
-                this.operatorid = rst.getString("operatorid");
-                this.masteragentid = rst.getString("masteragentid");
-                this.agentid = rst.getString("agentid");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-agent-referral-info",e.toString());
-        }
-    }
-}%>
-
+ 
 <%!public class FightDetails{
     public int countMeron,countDraw,countWala;
     public double totalMeron,totalDraw,totalWala;
-    public FightDetails(String fightkey, String operatorid, boolean includeDummy){
+    public FightDetails(String fightkey){
         try{
             ResultSet rst = null; 
             rst =  QuerySelect("select count(if(bet_choice='M', 1, NULL)) as count_meron, " 
@@ -412,7 +149,7 @@
                                 + " sum(if(bet_choice='M', bet_amount, 0)) as total_meron, " 
                                 + " sum(if(bet_choice='D', bet_amount, 0)) as total_draw, "
                                 + " sum(if(bet_choice='W', bet_amount, 0)) as total_wala"
-                                + " from tblfightbets where fightkey='"+fightkey+"' and operatorid='"+operatorid+"' " + (includeDummy ? "" : " and dummy=0 " ));
+                                + " from tblfightbets where fightkey='"+fightkey+"'");
             while(rst.next()){
                 this.countMeron = rst.getInt("count_meron");
                 this.countDraw = rst.getInt("count_draw");
@@ -483,96 +220,6 @@
     }
 }%>
  
-
-<%!public class TurnoverBonus{
-    public String bonusdate;
-    public double total, bonus; 
-    public TurnoverBonus(String userid){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery(sqlDailyTurnoverQuery(userid));
-            while(rst.next()){
-                this.total = rst.getDouble("total");
-                this.bonus = rst.getDouble("bonus");
-                this.bonusdate = rst.getString("current_date");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-turnover-bonus",e.toString());
-        }
-    }
-}%>
-
-<%!public class DepositInfo{
-    public String accountid; 
-    public double amount; 
-    public boolean confirmed;
-    public DepositInfo(String refno){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select * from tbldeposits as a where refno='"+refno+"'");
-            while(rst.next()){
-                this.accountid =  rst.getString("accountid");
-                this.amount = rst.getDouble("amount");
-                this.confirmed = rst.getBoolean("confirmed");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-deposit-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class WithdrawalInfo{
-    public String accountid, accountname, agentid, agentname;
-    public double amount, cashout;
-    public boolean iscashaccount;
-    public WithdrawalInfo(String refno){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select *,ifnull((select fullname from tblsubscriber as x where x.accountid=a.accountid),'') as accountname, "
-                        + " ifnull((select fullname from tblsubscriber as x where x.accountid=a.agentid),'') as agentname from tblwithdrawal as a where refno='"+refno+"'");
-            while(rst.next()){
-                this.accountid = rst.getString("accountid");
-                this.accountname = rst.getString("accountname");
-                this.agentid = rst.getString("agentid");
-                this.agentname = rst.getString("agentname");
-                this.amount = rst.getDouble("amount");
-                this.cashout = rst.getDouble("cashout");
-                this.iscashaccount = rst.getBoolean("iscashaccount");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-withdrawal-info",e.toString());
-        }
-    }
-}%>
-
-<%!public class NewAccountInfo{
-    public String fullname, mobilenumber, username, password, operatorid, masteragentid, agentid, reference, photourl, location;
-    public NewAccountInfo(String regno){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select * from tblregistration as a where regno='"+regno+"'");
-            while(rst.next()){
-                this.fullname = rst.getString("fullname");
-                this.mobilenumber = rst.getString("mobilenumber");
-                this.username = rst.getString("username");
-                this.password = rst.getString("password");
-                this.operatorid = rst.getString("operatorid");
-                this.masteragentid = rst.getString("masteragentid");
-                this.agentid = rst.getString("agentid");
-                this.reference = rst.getString("reference");
-                this.photourl = rst.getString("photourl");
-                this.location = rst.getString("location");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-new-account",e.toString());
-        }
-    }
-}%>
- 
 <%!public class ArenaInfo{
     public String arenaname, main_banner_url;
     public boolean opposite_bet;
@@ -591,27 +238,7 @@
         }
     }
 }%>
-
-<%!public class PromoInfo{
-    public String title, category, push_message, banner_url;
-    public PromoInfo(String id){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select title, CONCAT(UCASE(SUBSTRING(category, 1, 1)), LCASE(SUBSTRING(category, 2))) as category, push_message, banner_url from tblpromo where id='"+id+"'");
-            while(rst.next()){
-                this.title = rst.getString("title");
-                this.category = rst.getString("category");
-                this.push_message = rst.getString("push_message");
-                this.banner_url = rst.getString("banner_url");
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-promo",e.toString());
-        }
-    }
-}%>
-
-
+ 
 <%!public class VideoInfo{
     public String source_name, source_url, player_type, web_url, web_player;
     public boolean isyoutube;
@@ -705,118 +332,4 @@
         }
     }
 }%>
-
-
-<%!public class DateWeekly{
-    public String prev_week_code, current_week_code;
-    public String current_date, current_week_from, current_week_to, prev_week_from, prev_week_to;
-    public DateWeekly(){
-        try{
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Calendar current = Calendar.getInstance();
-            current_date = format.format(current.getTime());
-
-            current.add(Calendar.DATE, -1);
-            current.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-
-            current_week_from = format.format(current.getTime());
-            current.add(Calendar.DATE, 6);
-            current_week_to = format.format(current.getTime());
-
-            Calendar previous = (Calendar) current.clone();
-            previous.add(Calendar.DATE, -13);
-            prev_week_from = format.format(previous.getTime());
-
-            previous.add(Calendar.DATE, 6);
-            prev_week_to = format.format(previous.getTime());
-
-            prev_week_code = prev_week_from.replace("-","") + prev_week_to.replace("-",""); 
-            current_week_code = current_week_from.replace("-","") + current_week_to.replace("-",""); 
-
-        }catch(Exception e){
-            logError("class-api-date-weekly",e.toString());
-        }
-    }
-}%>
-
-<%!public class DownlineWinlossCockfight{
-    public double winloss;
-    public DownlineWinlossCockfight(String agentid, String datefrom, String dateto){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select ROUND(sum(win_amount) - sum(lose_amount),2) as winloss from tblfightbets2 as a where agentid='"+agentid+"'  and cancelled=0 and date_format(datetrn, '%Y-%m-%d') between '" + datefrom + "' and '" + dateto + "'");
-            while(rst.next()){
-                this.winloss = rst.getDouble("winloss");  
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-downline-win-loss-cockfight",e.toString());
-        }
-    }
-}%>
-
-<%!public class DownlineWinlossCasino{
-    public double winloss;
-    public DownlineWinlossCasino(String agentid, String datefrom, String dateto){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select ifnull(sum(winloss),0) as winloss from tblgamesummary as a where agentid='"+agentid+"' and date_format(gamedate, '%Y-%m-%d') between '" + datefrom + "' and '" + dateto + "'");
-            while(rst.next()){
-                this.winloss = rst.getDouble("winloss");  
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-downline-win-loss-casino",e.toString());
-        }
-    }
-}%>
-
-<%!public class PlayerWinlossCockfight{
-    public double winloss;
-    public PlayerWinlossCockfight(String accountid, String datefrom, String dateto){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select ROUND(sum(win_amount) - sum(lose_amount),2) as winloss from tblfightbets2 as a where accountid='"+accountid+"'  and cancelled=0 and date_format(datetrn, '%Y-%m-%d') between '" + datefrom + "' and '" + dateto + "'");
-            while(rst.next()){
-                this.winloss = rst.getDouble("winloss");  
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-player-win-loss-cockfight",e.toString());
-        }
-    }
-}%>
-
-<%!public class PlayerWinlossCasino{
-    public double winloss;
-    public PlayerWinlossCasino(String accountid, String datefrom, String dateto){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select ifnull(sum(winloss),0) as winloss from tblgamesummary as a where accountid='"+accountid+"' and date_format(gamedate, '%Y-%m-%d') between '" + datefrom + "' and '" + dateto + "'");
-            while(rst.next()){
-                this.winloss = rst.getDouble("winloss");  
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-player-win-loss-casino",e.toString());
-        }
-    }
-}%>
-
-<%!public class PlayerTotalDeposit{
-    public double totaldeposit;
-    public PlayerTotalDeposit(String accountid, String datefrom, String dateto){
-        try{
-            ResultSet rst = null; 
-            rst =  SelectQuery("select ifnull(sum(amount),0) as total from tbldeposits as a where accountid='"+accountid+"' and confirmed=1 and cancelled=0 and date_format(datetrn, '%Y-%m-%d') between '" + datefrom + "' and '" + dateto + "'");
-            while(rst.next()){
-                this.totaldeposit = rst.getDouble("total");  
-            }
-            rst.close();
-        }catch(SQLException e){
-            logError("class-player-total-deposit",e.toString());
-        }
-    }
-}%>
-
-
+ 

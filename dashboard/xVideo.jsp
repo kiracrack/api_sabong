@@ -10,32 +10,22 @@ try{
     String sessionid = request.getParameter("sessionid");
 
     if(x.isEmpty() || userid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
-
+        
     }else if(isAdminSessionExpired(userid,sessionid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalExpiredSessionMessageDashboard);
-        mainObj.put("errorcode", "session");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalExpiredSessionMessageDashboard, "session"));
         return;
-    
+        
     }else if(isAdminAccountBlocked(userid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalAdminAccountBlocked);
-        mainObj.put("errorcode", "blocked");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalAdminAccountBlocked, "blocked"));
         return;
     }
 
     if(x.equals("load_video")){
-        mainObj.put("status", "OK");
         mainObj = LoadVideos(mainObj);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized"));
+
 
     }else if(x.equals("set_video_youtube_info")){
         String mode = request.getParameter("mode");
@@ -44,17 +34,12 @@ try{
         String source_url = request.getParameter("source_url");
     
         if (CountQry("tblvideosource", "source_name='"+source_name+"' and id<>'"+videoid+"'") > 0) {
-                mainObj.put("status", "ERROR");
-                mainObj.put("message", "Video title already exists");
-                mainObj.put("errorcode", "100");
-                out.print(mainObj);
+                out.print(Error(mainObj, "Video title already exists", "100"));
                 return;
+                
 
         }else if (CountQry("tblvideosource", "source_url='"+source_url+"' and id<>'"+videoid+"'") > 0) {
-                mainObj.put("status", "ERROR");
-                mainObj.put("message", "Youtube id already exists");
-                mainObj.put("errorcode", "100");
-                out.print(mainObj);
+                out.print(Error(mainObj, "Youtube id already exists", "100"));
                 return;
         }
 
@@ -84,17 +69,12 @@ try{
         Boolean source_working = Boolean.parseBoolean(request.getParameter("source_working"));
     
         if (CountQry("tblvideosource", "source_name='"+source_name+"' and id<>'"+videoid+"' and deleted=0") > 0) {
-                mainObj.put("status", "ERROR");
-                mainObj.put("message", "Video title already exists");
-                mainObj.put("errorcode", "100");
-                out.print(mainObj);
+                out.print(Error(mainObj, "Video title already exists", "100"));
                 return;
 
         }else if (CountQry("tblvideosource", "source_url='"+source_url+"' and id<>'"+videoid+"' and deleted=0") > 0) {
-                mainObj.put("status", "ERROR");
-                mainObj.put("message", "Stream URL already exists");
-                mainObj.put("errorcode", "100");
                 out.print(mainObj);
+                out.print(Error(mainObj, "Stream URL already exists", "100"));
                 return;
         }
 
@@ -111,11 +91,11 @@ try{
         mainObj.put("status", "OK");
         out.print(mainObj);  
 
-        if(push_web_update){
+        /*if(push_web_update){
             ActiveEventVideo event = new ActiveEventVideo(videoid);
             apiObj = api_event_video(apiObj, event.eventid);
             PusherPost(event.eventid, apiObj);
-        }
+        }*/
         
     
     }else if(x.equals("delete_video")){
@@ -125,21 +105,15 @@ try{
         LogActivity(userid,"delete video id#" + videoid);   
 
         mainObj = LoadVideos(mainObj);
-        mainObj.put("status", "OK");
-        mainObj.put("message","Video sucessfully deleted");
-        out.print(mainObj);  
+        out.print(Success(mainObj, "Video sucessfully deleted"));
+    
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
     }
+
 }catch (Exception e){
-    mainObj.put("status", "ERROR");
-    mainObj.put("message", e.toString());
-    mainObj.put("errorcode", "400");
-    out.print(mainObj);
-    logError("dashboard-x-videos",e.toString());
+      out.print(Error(mainObj, e.toString(), "400"));
+      logError("dashboard-x-video",e.toString());
 }
 %>
 

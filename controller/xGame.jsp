@@ -67,78 +67,75 @@ try{
         }
 
         if(status.equals("closed")){ /*trigger bet watcher*/
-            for (int i=0; i < operatorList.size(); i++){
-                String operatorid = operatorList.get(i).toString();
-                OperatorInfo operator = new OperatorInfo(operatorid);
-                FightDetails fd = new FightDetails(fightkey, operatorid, operator.betwatcherincludedummybets);
-                double totalBetMeron = fd.totalMeron;
-                double totalBetWala = fd.totalWala;
+            GeneralSettings gs = new GeneralSettings();
+            FightDetails fd = new FightDetails(fightkey);
+            double totalBetMeron = fd.totalMeron;
+            double totalBetWala = fd.totalWala;
 
-                double totalAllBets = 0; double ratioMeron = 0; double ratioWala = 0;
-                double oddMeron = 0; double oddWala = 0;
+            double totalAllBets = 0; double ratioMeron = 0; double ratioWala = 0;
+            double oddMeron = 0; double oddWala = 0;
 
-                if(totalBetMeron != 0 || totalBetWala != 0){
-                    totalAllBets = totalBetMeron + totalBetWala;
-                    ratioMeron =  totalAllBets / totalBetMeron;
-                    ratioWala =  totalAllBets / totalBetWala;
-                    
-                    oddMeron = ratioMeron-(ratioMeron * GlobalFightCommission);
-                    oddWala = ratioWala-(ratioWala * GlobalFightCommission);
+            if(totalBetMeron != 0 || totalBetWala != 0){
+                totalAllBets = totalBetMeron + totalBetWala;
+                ratioMeron =  totalAllBets / totalBetMeron;
+                ratioWala =  totalAllBets / totalBetWala;
+                
+                oddMeron = ratioMeron-(ratioMeron * GlobalPlasada);
+                oddWala = ratioWala-(ratioWala * GlobalPlasada);
 
-                    if(operator.enableBetWatcher && isBetWatcherAvailable(operator.betwacherid)){
-                        if(oddWala <= operator.betwatcherodds){ /*execute bet watcher for meron*/
-                            double randomBet = Double.parseDouble(RandomBetPercentage()) / 100;
-                            double betDifference = (totalBetWala - totalBetMeron);
-                            double betToAdd = betDifference * randomBet;
+                if(gs.enableBetWatcher && isBetWatcherAvailable(gs.betwacherid)){
+                    if(oddWala <= gs.betwatcherodds){ /*execute bet watcher for meron*/
+                        double randomBet = Double.parseDouble(RandomBetPercentage()) / 100;
+                        double betDifference = (totalBetWala - totalBetMeron);
+                        double betToAdd = betDifference * randomBet;
 
-                            if(betToAdd <= operator.betwatchermaxamount){
-                                Random rand = new Random();
-                                int method =  rand.nextInt(10 - 1) + 1;
+                        if(betToAdd <= gs.betwatchermaxamount){
+                            Random rand = new Random();
+                            int method =  rand.nextInt(10 - 1) + 1;
 
-                                if(method % 2 == 0){
-                                    RandomDummyAccount dummy = new RandomDummyAccount();
-                                    ExecuteRecordAutoBet(eventid, operatorid, fightkey, fightnumber, totalBetMeron, totalBetWala, betDifference, "M", randomBet, betToAdd);
-                                    ExecutePostBet("android",eventid, sessionid, sessionid, operatorid, operator.betwacherid, "M",Val(betToAdd), "", true, false, false, dummy.accountno, dummy.dummyname);
-                                    betWatcherExecuted = true;
-                                }
-                            }
-                        }
-
-                        if(oddMeron <= operator.betwatcherodds){ /*execute bet watcher for wala*/
-                            double randomBet = Double.parseDouble(RandomBetPercentage()) / 100;
-                            double betDifference = (totalBetMeron - totalBetWala);
-                            double betToAdd = betDifference * randomBet;
-
-                            if(betToAdd <= operator.betwatchermaxamount){
-                                Random rand = new Random();
-                                int method =  rand.nextInt(10 - 1) + 1;
-
-                                if(method % 2 == 0){
-                                    RandomDummyAccount dummy = new RandomDummyAccount();
-                                    ExecuteRecordAutoBet(eventid, operatorid, fightkey, fightnumber, totalBetMeron, totalBetWala, betDifference, "W", randomBet, betToAdd);
-                                    ExecutePostBet("android",eventid, sessionid, sessionid, operatorid, operator.betwacherid, "W", Val(betToAdd), "", true, false, false, dummy.accountno, dummy.dummyname);
-                                    betWatcherExecuted = true;
-                                }
+                            if(method % 2 == 0){
+                                RandomDummyAccount dummy = new RandomDummyAccount();
+                                ExecuteRecordAutoBet(eventid, fightkey, fightnumber, totalBetMeron, totalBetWala, betDifference, "M", randomBet, betToAdd);
+                                ExecutePostBet("android",eventid, sessionid, sessionid, "", gs.betwacherid, "M",Val(betToAdd), "", true, false, false, dummy.accountno, dummy.dummyname);
+                                betWatcherExecuted = true;
                             }
                         }
                     }
 
-                    if(operator.enablebetbalancer){ /*execute bet balancer*/
-                        boolean isMeronFound = isLargeBetExists(operatorid, fightkey, "M" ,operator.betbalanceramount);
-                        boolean isWalaFound = isLargeBetExists(operatorid, fightkey, "W", operator.betbalanceramount);
+                    if(oddMeron <= gs.betwatcherodds){ /*execute bet watcher for wala*/
+                        double randomBet = Double.parseDouble(RandomBetPercentage()) / 100;
+                        double betDifference = (totalBetMeron - totalBetWala);
+                        double betToAdd = betDifference * randomBet;
 
-                        if(isMeronFound && isWalaFound){
-                        }else{
+                        if(betToAdd <= gs.betwatchermaxamount){
                             Random rand = new Random();
-                            int method1 =  rand.nextInt(10 - 1) + 1;
-                            int method2 =  rand.nextInt(10 - 1) + 1;
+                            int method =  rand.nextInt(10 - 1) + 1;
 
-                            if(method1 % 2 == 0){
-                                ExecuteBetBalancer(eventid, operatorid, fightkey, sessionid, isMeronFound, isWalaFound, operator.dummy_account_1, operator.dummy_account_2);
-                            }else{
-                                if(method2 % 2 == 0){
-                                    ExecuteBetBalancer(eventid, operatorid, fightkey, sessionid, isMeronFound, isWalaFound, operator.dummy_account_1, operator.dummy_account_2);
-                                }
+                            if(method % 2 == 0){
+                                RandomDummyAccount dummy = new RandomDummyAccount();
+                                ExecuteRecordAutoBet(eventid, fightkey, fightnumber, totalBetMeron, totalBetWala, betDifference, "W", randomBet, betToAdd);
+                                ExecutePostBet("android",eventid, sessionid, sessionid, "", gs.betwacherid, "W", Val(betToAdd), "", true, false, false, dummy.accountno, dummy.dummyname);
+                                betWatcherExecuted = true;
+                            }
+                        }
+                    }
+                }
+
+                if(gs.enablebetbalancer){ /*execute bet balancer*/
+                    boolean isMeronFound = isLargeBetExists(fightkey, "M" ,operator.betbalanceramount);
+                    boolean isWalaFound = isLargeBetExists(fightkey, "W", operator.betbalanceramount);
+
+                    if(isMeronFound && isWalaFound){
+                    }else{
+                        Random rand = new Random();
+                        int method1 =  rand.nextInt(10 - 1) + 1;
+                        int method2 =  rand.nextInt(10 - 1) + 1;
+
+                        if(method1 % 2 == 0){
+                            ExecuteBetBalancer(eventid, fightkey, sessionid, isMeronFound, isWalaFound, operator.dummy_account_1, operator.dummy_account_2);
+                        }else{
+                            if(method2 % 2 == 0){
+                                ExecuteBetBalancer(eventid, fightkey, sessionid, isMeronFound, isWalaFound, operator.dummy_account_1, operator.dummy_account_2);
                             }
                         }
                     }
@@ -161,7 +158,7 @@ try{
             String operatorid = operatorList.get(i).toString();
             
             JSONObject obj_operator = new JSONObject();
-            obj_operator.put("plasada", GlobalFightCommission);
+            obj_operator.put("plasada", GlobalPlasada);
             obj_operator = api_current_fight_summary(obj_operator, fightkey);
             PusherPost(eventid, obj_operator);
         }
@@ -222,96 +219,88 @@ try{
 
             boolean isCancelled = false;
             String cancelledReason = "";
-
-            ArrayList operatorList = new ArrayList();
-            operatorList = getActiveOperator();
-
+ 
             int totaltrn = CountQry("tblfightbets", "fightkey='"+fightkey+"' and dummy=0");
             ExecuteResult("update tblfightbets set win=0 where fightkey='"+fightkey+"'");
             
             String referenceno = getSystemSeriesID("series_result", 7);
             LogFightResult(referenceno, arenaid, eventid, eventkey, fightkey, fightnumber, postingdate, result);
 
-            for (int i=0; i < operatorList.size(); i++){
-                String operatorid = operatorList.get(i).toString();
-                OperatorInfo operator = new OperatorInfo(operatorid);
+            GeneralSettings gs = new GeneralSettings();
+            FightDetails fd = new FightDetails(fightkey);
+            int bettorMeron = fd.countMeron;
+            int bettorDraw = fd.countDraw;
+            int bettorWala = fd.countWala;
+            double totalBetMeron = fd.totalMeron;
+            double totalBetDraw = fd.totalDraw;
+            double totalBetWala = fd.totalWala;
 
-                FightDetails fd = new FightDetails(fightkey, operatorid, true);
-                int bettorMeron = fd.countMeron;
-                int bettorDraw = fd.countDraw;
-                int bettorWala = fd.countWala;
-                double totalBetMeron = fd.totalMeron;
-                double totalBetDraw = fd.totalDraw;
-                double totalBetWala = fd.totalWala;
-
-                double totalAllBets = 0; double ratioMeron = 0; double ratioWala = 0;
-                double oddMeron = 0; double oddWala = 0;
-                
-                if(isDraw){
-                    ExecuteResult("update tblfightbets set win=1 where fightkey='"+fightkey+"' and bet_choice='D' and operatorid='"+operatorid+"'");
-                }
-
-                if(totalBetMeron > 0 && totalBetWala > 0){
-                    totalAllBets = totalBetMeron + totalBetWala;
-                    ratioMeron =  totalAllBets / totalBetMeron;
-                    ratioWala =  totalAllBets / totalBetWala;
-                    
-                    oddMeron = ratioMeron-(ratioMeron * GlobalFightCommission);
-                    oddWala = ratioWala-(ratioWala * GlobalFightCommission);
-
-                    if(oddMeron < 1.3 || oddWala < 1.3){  
-                        isCancelled = true;
-                        cancelledReason = (oddMeron < 1.3 ? "Meron" : "Wala") + " odds is 1.2%";
-                    }else{
-                        isCancelled = false;
-                        ExecuteResult("update tblfightbets set win=1 where fightkey='"+fightkey+"' and bet_choice='"+result+"' and operatorid='"+operatorid+"'");
-                    }
-                }else{
-                    isCancelled = true;
-                    cancelledReason = "No bets from other side";
-                }
+            double totalAllBets = 0; double ratioMeron = 0; double ratioWala = 0;
+            double oddMeron = 0; double oddWala = 0;
             
-                ExecuteComputeBets(operatorid, fightkey, result, isDraw, isCancelled, cancelledReason,  oddMeron, oddWala);
-                if(isDraw){
-                    ExecuteReturnBetsDraw(operatorid, fightkey, sessionid,referenceno);
-                }else if(isCancelled){
-                    ExecuteReturnBetsCancelled(operatorid, fightkey,sessionid,referenceno, false, cancelledReason);
-                }
-
-                FightSummary fs = new FightSummary(fightkey, operatorid);
-                double totalPlayerBets = fs.totalMeron + fs.totalDraw + fs.totalWala;
-                
-                ExecuteResult("DELETE from tblfightsummary where fightkey='"+fightkey+"' and operatorid='"+operatorid+"'");
-                ExecuteResult("INSERT into tblfightsummary set " 
-                            + " operatorid='"+operatorid+"', "
-                            + " arenaid='"+arenaid+"',"
-                            + " eventid='"+eventid+"', "
-                            + " eventkey='"+eventkey+"', "
-                            + " fightkey='"+fightkey+"', "
-                            + " fightnumber='"+fightnumber+"', "
-                            + " postingdate='"+postingdate+"', "
-                            + " bettors_meron='"+fs.countMeron+"', "
-                            + " bettors_draw='"+fs.countDraw+"', "
-                            + " bettors_wala='"+fs.countWala+"', "
-                            + " total_meron='"+fs.totalMeron+"', "
-                            + " total_draw='"+fs.totalDraw+"', "
-                            + " total_wala='"+fs.totalWala+"', "
-                            + " total_bets='"+ totalPlayerBets +"', "
-                            + " odd_meron='"+oddMeron+"', "
-                            + " odd_wala='"+oddWala+"', "
-                            + " result='"+result+"', "
-                            + " win_amount="+fs.totalWinAmount+", " 
-                            + " lose_amount="+fs.totalLoseAmount+", " 
-                            + " payout_amount="+fs.totalPayout+", " 
-                            + " gros_ge_rate='"+GlobalFightCommission+"', " 
-                            + " gros_ge_total="+ (isDraw || isCancelled ? 0 : (totalPlayerBets) * GlobalFightCommission) +", " 
-                            + " gros_op_rate='"+operator.op_com_rate +"', " 
-                            + " gros_op_total="+(isDraw || isCancelled ? 0 : (totalPlayerBets) * operator.op_com_rate )+", " 
-                            + " gros_be_rate='"+operator.be_com_rate+"', " 
-                            + " gros_be_total="+(isDraw || isCancelled ? 0 : (totalPlayerBets) * operator.be_com_rate)+", "
-                            + " datetrn=current_timestamp, "
-                            + " trnby='"+deviceid+"'");
+            if(isDraw){
+                ExecuteResult("update tblfightbets set win=1 where fightkey='"+fightkey+"' and bet_choice='D'");
             }
+
+            if(totalBetMeron > 0 && totalBetWala > 0){
+                totalAllBets = totalBetMeron + totalBetWala;
+                ratioMeron =  totalAllBets / totalBetMeron;
+                ratioWala =  totalAllBets / totalBetWala;
+                
+                oddMeron = ratioMeron-(ratioMeron * GlobalPlasada);
+                oddWala = ratioWala-(ratioWala * GlobalPlasada);
+
+                if(oddMeron < 1.3 || oddWala < 1.3){  
+                    isCancelled = true;
+                    cancelledReason = (oddMeron < 1.3 ? "Meron" : "Wala") + " odds is 1.2%";
+                }else{
+                    isCancelled = false;
+                    ExecuteResult("update tblfightbets set win=1 where fightkey='"+fightkey+"' and bet_choice='"+result+"'");
+                }
+            }else{
+                isCancelled = true;
+                cancelledReason = "No bets from other side";
+            }
+        
+            ExecuteComputeBets(fightkey, result, isDraw, isCancelled, cancelledReason,  oddMeron, oddWala);
+            if(isDraw){
+                ExecuteReturnBetsDraw(fightkey, sessionid,referenceno);
+            }else if(isCancelled){
+                ExecuteReturnBetsCancelled(fightkey,sessionid,referenceno, false, cancelledReason);
+            }
+
+            FightSummary fs = new FightSummary(fightkey);
+            double totalPlayerBets = fs.totalMeron + fs.totalDraw + fs.totalWala;
+            
+            ExecuteResult("DELETE from tblfightsummary where fightkey='"+fightkey+"'");
+            ExecuteResult("INSERT into tblfightsummary set " 
+                        + " arenaid='"+arenaid+"',"
+                        + " eventid='"+eventid+"', "
+                        + " eventkey='"+eventkey+"', "
+                        + " fightkey='"+fightkey+"', "
+                        + " fightnumber='"+fightnumber+"', "
+                        + " postingdate='"+postingdate+"', "
+                        + " bettors_meron='"+fs.countMeron+"', "
+                        + " bettors_draw='"+fs.countDraw+"', "
+                        + " bettors_wala='"+fs.countWala+"', "
+                        + " total_meron='"+fs.totalMeron+"', "
+                        + " total_draw='"+fs.totalDraw+"', "
+                        + " total_wala='"+fs.totalWala+"', "
+                        + " total_bets='"+ totalPlayerBets +"', "
+                        + " odd_meron='"+oddMeron+"', "
+                        + " odd_wala='"+oddWala+"', "
+                        + " result='"+result+"', "
+                        + " win_amount="+fs.totalWinAmount+", " 
+                        + " lose_amount="+fs.totalLoseAmount+", " 
+                        + " payout_amount="+fs.totalPayout+", " 
+                        + " gros_ge_rate='"+GlobalPlasada+"', " 
+                        + " gros_ge_total="+ (isDraw || isCancelled ? 0 : (totalPlayerBets) * GlobalPlasada) +", " 
+                        + " gros_op_rate='"+gs.op_com_rate +"', " 
+                        + " gros_op_total="+(isDraw || isCancelled ? 0 : (totalPlayerBets) * gs.op_com_rate )+", " 
+                        + " gros_be_rate='"+gs.be_com_rate+"', " 
+                        + " gros_be_total="+(isDraw || isCancelled ? 0 : (totalPlayerBets) * gs.be_com_rate)+", "
+                        + " datetrn=current_timestamp, "
+                        + " trnby='"+deviceid+"'");
             
             //finalizing entries and transfer log entries
             BackupBetsTable(fightkey);
@@ -423,19 +412,19 @@ try{
     ExecuteResult("UPDATE tblfightbets set fightnumber='"+fightnumber+"' where fightkey='"+fightkey+"'"); 
 }%>
 
-<%!public void ExecuteRecordAutoBet(String eventid, String operatorid, String fightkey, String fightnumber, double totalBetMeron, double totalBetWala, double betDifference, String choice, double autoBet, double betToAdd){
-    ExecuteResult("insert into tblbetwatcher set eventid='"+eventid+"', operatorid='"+operatorid+"',fightkey='"+fightkey+"',fightnumber='"+fightnumber+"',total_meron='"+totalBetMeron+"',total_wala='"+totalBetWala+"',total_difference='"+betDifference+"',auto_bet_choice='"+choice+"',auto_bet_percent='"+autoBet+"',auto_bet_amount='"+betToAdd+"', datetrn=current_timestamp");
+<%!public void ExecuteRecordAutoBet(String eventid, String fightkey, String fightnumber, double totalBetMeron, double totalBetWala, double betDifference, String choice, double autoBet, double betToAdd){
+    ExecuteResult("insert into tblbetwatcher set eventid='"+eventid+"', fightkey='"+fightkey+"',fightnumber='"+fightnumber+"',total_meron='"+totalBetMeron+"',total_wala='"+totalBetWala+"',total_difference='"+betDifference+"',auto_bet_choice='"+choice+"',auto_bet_percent='"+autoBet+"',auto_bet_amount='"+betToAdd+"', datetrn=current_timestamp");
 }%>
 
-<%!public void ExecuteBetBalancer(String eventid, String operatorid, String fightkey, String sessionid, boolean isMeronFound, boolean isWalaFound, String dummy_account_1, String dummy_account_2){
+<%!public void ExecuteBetBalancer(String eventid, String fightkey, String sessionid, boolean isMeronFound, boolean isWalaFound, String dummy_account_1, String dummy_account_2){
     RandomDummyAccount dummy = new RandomDummyAccount();
-    FinalBets finalBets = new FinalBets(operatorid, fightkey);
+    FinalBets finalBets = new FinalBets(fightkey);
     
     if(isMeronFound){
         if(finalBets.oddMeron > 1.7){
             double random = Double.parseDouble(RandomBetBalancer()) / 100;
             double balancer = finalBets.totalMeron * random;
-            ExecutePostBet("android",eventid, sessionid, sessionid, operatorid, dummy_account_1, "M", Val(balancer), "", false, true, false, dummy.accountno, dummy.dummyname);
+            ExecutePostBet("android",eventid, sessionid, sessionid, "", dummy_account_1, "M", Val(balancer), "", false, true, false, dummy.accountno, dummy.dummyname);
         }
     }
 
@@ -443,16 +432,16 @@ try{
         if(finalBets.oddWala > 1.7){
             double random = Double.parseDouble(RandomBetBalancer()) / 100;
             double balancer = finalBets.totalWala * random;
-            ExecutePostBet("android",eventid, sessionid, sessionid, operatorid, dummy_account_2, "W", Val(balancer), "", false, true, false, dummy.accountno, dummy.dummyname);
+            ExecutePostBet("android",eventid, sessionid, sessionid, "", dummy_account_2, "W", Val(balancer), "", false, true, false, dummy.accountno, dummy.dummyname);
         }
     }
    
 }%>
 
-<%!public boolean isLargeBetExists(String operatorid, String fightkey, String bet_choice, double amount) {
+<%!public boolean isLargeBetExists(String fightkey, String bet_choice, double amount) {
     boolean found = false;
     try{
-        ResultSet rst = SelectQuery("select sum(bet_amount) as total_bets from tblfightbets where operatorid='"+operatorid+"' and fightkey='"+fightkey+"' and bet_choice='"+bet_choice+"' and dummy=0 and banker=0 and test=0 group by accountid");
+        ResultSet rst = SelectQuery("select sum(bet_amount) as total_bets from tblfightbets where fightkey='"+fightkey+"' and bet_choice='"+bet_choice+"' and dummy=0 and banker=0 group by accountid");
         while(rst.next()){
             double totalbets = rst.getDouble("total_bets");
             if(totalbets >= amount){

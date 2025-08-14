@@ -1,7 +1,4 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xLibrary.jsp" %>
-<%@ include file="../module/xRecordModule.jsp" %>
-<%@ include file="../module/xRecordClass.jsp" %>
 
 <%
    JSONObject mainObj =new JSONObject();
@@ -48,19 +45,18 @@ try{
         if(CheckAppUpdate(appVersion)){
             mainObj.put("status", "UPDATE");
             mainObj.put("message","A new update available! Download it now to proceed.");
-            mainObj = api_controller_update(mainObj);
+            mainObj = controller_update(mainObj);
             out.print(mainObj);
             return;
         }
 
         String sessionid = UUID.randomUUID().toString();
         ExecuteQuery("update tblcontroller set sessionid='"+sessionid+"', lastlogin=current_timestamp where deviceid='"+deviceid+"'");
-        ExecuteQuery("DELETE FROM tblcreditledgerlogs where trnby='CONTROLLER'");
-        
+       
         mainObj.put("status", "OK");
-        mainObj = getActiveArena(mainObj);
-        mainObj = getGeneralSettings(mainObj);
-        mainObj = getDummyAccount(mainObj);
+        mainObj = active_arena(mainObj);
+        mainObj = general_settings(mainObj);
+        mainObj = dummy_settings(mainObj);
         mainObj.put("sessionid", sessionid);
         mainObj.put("message","request returned valid");
         out.print(mainObj);

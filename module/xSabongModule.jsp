@@ -20,7 +20,6 @@
 %>
 
 <%!public void ExecutePostBet(String platform, String eventid, String sessionid, String appreference, String operatorid, String userid, String bet_choice, double bet_amount, String ws_selection, boolean banker, boolean dummy, boolean test, String display_id, String display_name) {
-    AccountInfo account = new AccountInfo(userid);
     EventInfo event = new EventInfo(eventid, false);
 
     String transactionno = getOperatorSeriesID(operatorid,"series_fight_bet");
@@ -34,8 +33,6 @@
                             + " sessionid='"+sessionid+"', "
                             + " appreference='"+appreference+"', "
                             + " platform='"+platform+"', "
-                            + " masteragentid='"+account.masteragentid+"', "
-                            + " agentid='"+account.agentid+"', "
                             + " arenaid='"+event.arenaid+"', " 
                             + " eventid='"+eventid+"', "
                             + " eventkey='"+eventid+"-"+event.eventkey+"', "
@@ -49,14 +46,14 @@
                             + " lose_amount='"+bet_amount+"', "
                             + " datetrn=current_timestamp";
     if(dummy){
-        if(banker) LogLedgerDirect(userid, sessionid, appreference, transactionno, (banker ? "banker" : "choose") +" bet "+ (bet_choice.equals("M") ? "meron" : (bet_choice.equals("W") ? "wala" : "draw")) +"  (fight#"+event.fightnumber+"@"+event.arena+")",bet_amount,0, userid);    
+        //if(banker) LogLedgerDirect(userid, sessionid, appreference, transactionno, (banker ? "banker" : "choose") +" bet "+ (bet_choice.equals("M") ? "meron" : (bet_choice.equals("W") ? "wala" : "draw")) +"  (fight#"+event.fightnumber+"@"+event.arena+")",bet_amount,0, userid);    
         ExecuteDummy("insert into tblfightbets " + Command);
     }else{
         ExecuteBet("insert into tblfightbets " + Command);
-        ExecuteResult("UPDATE tblsubscriber set winstrike_selection='"+ws_selection+"' where accountid='"+userid+"'");
+        //ExecuteResult("UPDATE tblsubscriber set winstrike_selection='"+ws_selection+"' where accountid='"+userid+"'");
         //ExecuteBet("insert into tblfightbetslogs " + Command);
         if(isBetRecordFound(userid, sessionid, appreference, event.fightkey, transactionno, bet_amount)){
-            LogLedger(userid, sessionid, appreference, transactionno, (banker ? "banker" : "choose") +" bet "+ (bet_choice.equals("M") ? "meron" : (bet_choice.equals("W") ? "wala" : "draw")) +"  (fight#"+event.fightnumber+"@"+event.arena+")",bet_amount,0, userid);    
+            //LogLedger(userid, sessionid, appreference, transactionno, (banker ? "banker" : "choose") +" bet "+ (bet_choice.equals("M") ? "meron" : (bet_choice.equals("W") ? "wala" : "draw")) +"  (fight#"+event.fightnumber+"@"+event.arena+")",bet_amount,0, userid);    
         }else{
             logError("error-post-bet", "Fightkey: " + event.fightkey + ", accountid: " + userid + ", transactionno: " + transactionno +  ", amount: " + bet_amount);
         }
@@ -68,38 +65,37 @@
     return CountQry("tblfightbets", "accountid='"+accountid+"' and sessionid='"+sessionid+"' and appreference='"+appreference+"' and fightkey='"+fightkey+"' and transactionno='"+transactionno+"' and bet_amount="+amount+"") > 0;
 }%>
 
-<%!public void ExecuteComputeBets(String operatorid, String fightkey, String result, boolean isDraw, boolean isCancelled, String cancelledReason,  double oddMeron, double oddWala){
-     OperatorInfo operator = new OperatorInfo(operatorid);
-
+<%!public void ExecuteComputeBets(String fightkey, String result, boolean isDraw, boolean isCancelled, String cancelledReason,  double oddMeron, double oddWala){
+     GeneralSettings gs = new GeneralSettings();
      ExecuteResult("update tblfightbets set " 
                         + " result='"+result+"', "
                         + " odd=if(win,if(bet_choice='M',"+oddMeron+","+oddWala+"), if(bet_choice='M',"+oddMeron+","+oddWala+")),"
                         + " win_amount="+(isDraw || isCancelled ? "0" : "if(win,(bet_amount*if(bet_choice='M',"+oddMeron+","+oddWala+"))-bet_amount,0)")+", " 
                         + " lose_amount="+(isDraw || isCancelled ? "0" : "if(win,0,bet_amount)")+", " 
                         + " payout_amount=if(win,(bet_amount*if(bet_choice='M',"+oddMeron+","+oddWala+")),0), " 
-                        + " gros_ge_rate='"+GlobalFightCommission+"', " 
-                        + " gros_ge_total="+(isDraw || isCancelled ? "0" : "(bet_amount*"+GlobalFightCommission+")")+", " 
-                        + " gros_op_rate='"+operator.op_com_rate+"', " 
-                        + " gros_op_total="+(isDraw || isCancelled ? "0" : "(bet_amount*"+operator.op_com_rate+")")+", " 
-                        + " gros_be_rate='"+operator.be_com_rate+"', " 
-                        + " gros_be_total="+(isDraw || isCancelled ? "0" : "(bet_amount*"+operator.be_com_rate+")")+ ", "
+                        + " gros_ge_rate='"+GlobalPlasada+"', " 
+                        + " gros_ge_total="+(isDraw || isCancelled ? "0" : "(bet_amount*"+GlobalPlasada+")")+", " 
+                        + " gros_op_rate='"+gs.op_com_rate+"', " 
+                        + " gros_op_total="+(isDraw || isCancelled ? "0" : "(bet_amount*"+gs.op_com_rate+")")+", " 
+                        + " gros_be_rate='"+gs.be_com_rate+"', " 
+                        + " gros_be_total="+(isDraw || isCancelled ? "0" : "(bet_amount*"+gs.be_com_rate+")")+ ", "
                         + " cancelled=" + isCancelled + ", "  
                         + " cancelledreason='" + (isDraw ? "Draw fight" : cancelledReason) + "' "  
-                        + " where operatorid='"+operatorid+"' and fightkey='"+fightkey+"' and (bet_choice='M' or bet_choice='W')");
+                        + " where fightkey='"+fightkey+"' and (bet_choice='M' or bet_choice='W')");
 
     ExecuteResult("update tblfightbets set " 
                         + " result='"+result+"', "
-                        + " odd="+operator.draw_rate+","
-                        + " win_amount=if(win,(bet_amount*"+operator.draw_rate+"),0), " 
+                        + " odd="+gs.draw_rate+","
+                        + " win_amount=if(win,(bet_amount*"+gs.draw_rate+"),0), " 
                         + " lose_amount=if(win,0,bet_amount), " 
-                        + " payout_amount=if(win,(bet_amount*"+operator.draw_rate+")+bet_amount,0), " 
-                        + " gros_ge_rate=if(win,0,'"+GlobalFightCommission+"'), " 
-                        + " gros_ge_total=if(win,0,(bet_amount*"+GlobalFightCommission+")), " 
-                        + " gros_op_rate=if(win,0,'"+operator.op_com_rate+"'), " 
-                        + " gros_op_total=if(win,0,(bet_amount*"+operator.op_com_rate+")), " 
-                        + " gros_be_rate=if(win,0,'"+operator.be_com_rate+"'), " 
-                        + " gros_be_total=if(win,0,(bet_amount*"+operator.be_com_rate+")) " 
-                        + " where operatorid='"+operatorid+"' and fightkey='"+fightkey+"' and bet_choice='D'");
+                        + " payout_amount=if(win,(bet_amount*"+gs.draw_rate+")+bet_amount,0), " 
+                        + " gros_ge_rate=if(win,0,'"+GlobalPlasada+"'), " 
+                        + " gros_ge_total=if(win,0,(bet_amount*"+GlobalPlasada+")), " 
+                        + " gros_op_rate=if(win,0,'"+gs.op_com_rate+"'), " 
+                        + " gros_op_total=if(win,0,(bet_amount*"+gs.op_com_rate+")), " 
+                        + " gros_be_rate=if(win,0,'"+gs.be_com_rate+"'), " 
+                        + " gros_be_total=if(win,0,(bet_amount*"+gs.be_com_rate+")) " 
+                        + " where fightkey='"+fightkey+"' and bet_choice='D'");
 }%>
 
 <%!public JSONObject FetchMyBet(JSONObject mainObj, String accountid, String fightkey) {
@@ -357,7 +353,7 @@
                 + " fightnumber='"+fightnumber+"', "
                 + " postingdate='"+postingdate+"', "
                 + " result='C', "
-                + " gros_ge_rate='"+GlobalFightCommission+"', " 
+                + " gros_ge_rate='"+GlobalPlasada+"', " 
                 + " gros_op_rate='"+operator.op_com_rate+"', " 
                 + " gros_be_rate='"+operator.be_com_rate+"', " 
                 + " datetrn=current_timestamp, "

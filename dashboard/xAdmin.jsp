@@ -8,50 +8,32 @@ try{
     String sessionid = request.getParameter("sessionid");
 
     if(x.isEmpty() || userid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
         
     }else if(isAdminSessionExpired(userid,sessionid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalExpiredSessionMessageDashboard);
-        mainObj.put("errorcode", "session");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalExpiredSessionMessageDashboard, "session"));
         return;
         
     }else if(isAdminAccountBlocked(userid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalAdminAccountBlocked);
-        mainObj.put("errorcode", "blocked");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalAdminAccountBlocked, "blocked"));
         return;
     }
 
     if(x.equals("load_admin")){
-        String operatorid = request.getParameter("operatorid");
-
-        mainObj.put("status", "OK");
-        mainObj = LoadAdminAccounts(mainObj, operatorid);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        mainObj = LoadAdminAccounts(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else if(x.equals("delete_admin")){
         String id = request.getParameter("id");
-        String operatorid = request.getParameter("operatorid");
 
         ExecuteQuery("UPDATE tbladminaccounts set deleted=1,datedeleted=current_timestamp,deletedby='"+userid+"' where id='"+id+"'");
         LogActivity(userid,"delete admin account id#" + id);   
 
-        mainObj = LoadAdminAccounts(mainObj, operatorid);
-        mainObj.put("status", "OK");
-        mainObj.put("message","Admin account successfully deleted");
-        out.print(mainObj); 
-
+        mainObj = LoadAdminAccounts(mainObj);
+        out.print(Success(mainObj, "Admin account successfully deleted"));
+        
     }else if(x.equals("set_admin_info")){
-        String operatorid = request.getParameter("operatorid");
-
         boolean edit = Boolean.parseBoolean(request.getParameter("edit"));
         String id = request.getParameter("id");
         String fullname = request.getParameter("fullname");
@@ -59,7 +41,6 @@ try{
         String emailaddress = request.getParameter("email");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        boolean operatoradmin = Boolean.parseBoolean(request.getParameter("operatoradmin"));
         boolean allow_add = Boolean.parseBoolean(request.getParameter("allow_add"));
         boolean allow_edit = Boolean.parseBoolean(request.getParameter("allow_edit"));
         boolean allow_delete = Boolean.parseBoolean(request.getParameter("allow_delete"));
@@ -69,25 +50,17 @@ try{
         String allow_menu_access = request.getParameter("allow_menu_access");
 
         if (CountQry("tbladminaccounts", "fullname='"+fullname+"'  and id<>'"+id+"'") > 0) {
-            mainObj.put("status", "ERROR");
-            mainObj.put("message", "Fullname already exists");
-            mainObj.put("errorcode", "100");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Fullname already exists", "100"));
             return;
 
         }else if (CountQry("tbladminaccounts", "username='"+username+"'  and id<>'"+id+"'") > 0) {
-            mainObj.put("status", "ERROR");
-            mainObj.put("message", "Username already exists");
-            mainObj.put("errorcode", "100");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Username already exists", "100"));
             return;
         }
 
         String query = "fullname='"+rchar(fullname)+"', "
                     + " mobilenumber='"+mobilenumber+"', "
                     + " emailaddress='"+emailaddress+"', "
-                    + " operatoradmin="+operatoradmin+", "
-                    + " operatorid='"+operatorid+"', "
                     + " username='"+username+"', " 
                     + " allow_add="+allow_add+", "
                     + " allow_edit="+allow_edit+", "
@@ -108,36 +81,30 @@ try{
             mainObj.put("message","Admin Account Sucessfully Added!");
             LogActivity(userid,"added admin's account name " + fullname);   
         }
-        mainObj = LoadAdminAccounts(mainObj, operatorid);
+        mainObj = LoadAdminAccounts(mainObj);
         mainObj.put("status", "OK");
         out.print(mainObj);  
 
     } else if(x.equals("block_admin")){
         String id = request.getParameter("id");
-        String operatorid = request.getParameter("operatorid");
         String fullname = request.getParameter("fullname");
         String reason = request.getParameter("reason");
         
         ExecuteQuery("update tbladminaccounts set blocked=1, blockedreason='"+rchar(reason)+"',dateblocked=current_timestamp where id = '"+id+"';");
         LogActivity(userid,"blocked admin " + fullname + "");   
 
-        mainObj.put("status", "OK");
-        mainObj.put("message","Admin account successfully blocked");
-        mainObj = LoadAdminAccounts(mainObj, operatorid);
-        out.print(mainObj);
+        mainObj = LoadAdminAccounts(mainObj);
+        out.print(Success(mainObj, "Admin account successfully blocked"));
 
     }else if(x.equals("unblock_admin")){
         String id = request.getParameter("id");
         String fullname = request.getParameter("fullname");
-        String operatorid = request.getParameter("operatorid");
         
         ExecuteQuery("update tbladminaccounts set blocked=0, blockedreason='',dateblocked=null where id = '"+id+"';");
         LogActivity(userid,"unblocked admin " + fullname + "");   
 
-        mainObj.put("status", "OK");
-        mainObj.put("message","Admin account successfully unblocked");
-        mainObj = LoadAdminAccounts(mainObj, operatorid);
-        out.print(mainObj);
+        mainObj = LoadAdminAccounts(mainObj);
+        out.print(Success(mainObj, "Admin account successfully unblocked"));
 
     }else if(x.equals("update_profile_info")){
         String fullname = request.getParameter("fullname");
@@ -145,69 +112,47 @@ try{
         String email = request.getParameter("email");
         String username = request.getParameter("username");
 
-
         if (CountQry("tbladminaccounts", "fullname='"+fullname+"'  and id<>'"+userid+"'") > 0) {
-            mainObj.put("status", "ERROR");
-            mainObj.put("message", "Fullname already exists");
-            mainObj.put("errorcode", "100");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Fullname already exists", "100"));
             return;
 
         }else if (CountQry("tbladminaccounts", "username='"+username+"'  and id<>'"+userid+"'") > 0) {
-            mainObj.put("status", "ERROR");
-            mainObj.put("message", "Username already exists");
-            mainObj.put("errorcode", "100");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Username already exists", "100"));
             return;
             
         }
         
         ExecuteQuery("update tbladminaccounts set fullname='"+rchar(fullname)+"', mobilenumber='"+mobile+"',emailaddress='"+email+"',username='"+username+"' where id = '"+userid+"';");
+        out.print(Success(mainObj, "Account successfully updated"));
         LogActivity(userid,"update own admin profile");   
-
-        mainObj.put("status", "OK");
-        mainObj.put("message","Account successfully updated");
-        out.print(mainObj);
     
     }else if(x.equals("update_profile_password")){
         String old_password = request.getParameter("old_password");
         String new_password = request.getParameter("new_password");
 
         if (CountQry("tbladminaccounts", "password=AES_ENCRYPT('"+old_password+"', '"+globalPassKey+"') and id='"+userid+"'") == 0) {
-            mainObj.put("status", "ERROR");
-            mainObj.put("message", "Invalid old password! Please try again");
-            mainObj.put("errorcode", "100");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Invalid old password! Please try again", "100"));
             return;
         }
         
         ExecuteQuery("update tbladminaccounts set password=AES_ENCRYPT('"+new_password+"', '"+globalPassKey+"') where id = '"+userid+"';");
+        out.print(Success(mainObj, "Password successfully changed!"));
         LogActivity(userid,"update own admin password");   
 
-        mainObj.put("status", "OK");
-        mainObj.put("message","Password successfully changed!");
-        out.print(mainObj);
-
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
+        
     }
 }catch (Exception e){
-      mainObj.put("status", "ERROR");
-      mainObj.put("message", e.toString());
-      mainObj.put("errorcode", "400");
-      out.print(mainObj);
+      out.print(Error(mainObj, e.toString(), "400"));
       logError("dashboard-x-operators",e.toString());
 }
 %>
 
-<%!public JSONObject LoadAdminAccounts(JSONObject mainObj, String operatorid) {
+<%!public JSONObject LoadAdminAccounts(JSONObject mainObj) {
     mainObj = DBtoJson(mainObj, "admin", "select *, date_format(dateregistered, '%M %d, %Y %r') as datereg, " 
                         + " date_format(lastlogin, '%M %d, %Y %r') as datelog, "
-                        + " (select companyname from tbloperator where companyid=a.operatorid) as operator, " 
-                        + " if(blocked,'Blocked', 'Active') as status from tbladminaccounts as a where deleted=0 and operatorid='"+operatorid+"'");
+                        + " if(blocked,'Blocked', 'Active') as status from tbladminaccounts as a where deleted=0");
     return mainObj;
  }
  %>

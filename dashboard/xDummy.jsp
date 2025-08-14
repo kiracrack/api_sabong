@@ -1,7 +1,4 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xLibrary.jsp" %>
-<%@ include file="../module/xRecordModule.jsp" %>
-<%@ include file="../module/xRecordClass.jsp" %>
  
 <%
     JSONObject mainObj = new JSONObject();
@@ -11,32 +8,21 @@ try{
     String sessionid = request.getParameter("sessionid");
 
     if(x.isEmpty() || userid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
         
     }else if(isAdminSessionExpired(userid,sessionid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalExpiredSessionMessageDashboard);
-        mainObj.put("errorcode", "session");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalExpiredSessionMessageDashboard, "session"));
         return;
-    
+        
     }else if(isAdminAccountBlocked(userid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalAdminAccountBlocked);
-        mainObj.put("errorcode", "blocked");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalAdminAccountBlocked, "blocked"));
         return;
     }
 
     if(x.equals("load_dummy_Account")){
-        mainObj.put("status", "OK");
         mainObj = LoadDummyNames(mainObj);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else if(x.equals("upload_dummy_name")){
         String file_content = request.getParameter("file_content");
@@ -49,18 +35,27 @@ try{
             ExecuteQuery("INSERT INTO tbldummyname set accountno='"+QuoteValue(parts[0])+"', dummyname='"+QuoteValue(parts[1])+"'");
         }
 
-        mainObj.put("status", "OK");
-        mainObj.put("message","Dummy account successfully uploaded!");
+
         mainObj = LoadDummyNames(mainObj);
-        out.print(mainObj);
+        out.print(Success(mainObj, "Dummy account successfully uploaded!"));
 
     }else if(x.equals("load_dummy_settings")){
-        mainObj.put("status", "OK");
         mainObj = LoadDummySettings(mainObj);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized"));
     
     }else if(x.equals("set_dummy_settings")){
+        String am_amt_from = request.getParameter("am_amt_from");
+        String am_amt_to = request.getParameter("am_amt_to");
+        String am_amt_time = request.getParameter("am_amt_time");
+        String pm_amt_from = request.getParameter("pm_amt_from");
+        String pm_amt_to = request.getParameter("pm_amt_to");
+        String pm_amt_time = request.getParameter("pm_amt_time");
+        String eve_amt_from = request.getParameter("eve_amt_from");
+        String eve_amt_to = request.getParameter("eve_amt_to");
+        String eve_amt_time = request.getParameter("eve_amt_time");
+        String mid_amt_from = request.getParameter("mid_amt_from");
+        String mid_amt_to = request.getParameter("mid_amt_to");
+        String mid_amt_time = request.getParameter("mid_amt_time");
         String time_am = request.getParameter("time_am");
         String range_am_from = request.getParameter("range_am_from");
         String range_am_to = request.getParameter("range_am_to");
@@ -74,7 +69,19 @@ try{
         String range_mid_from = request.getParameter("range_mid_from");
         String range_mid_to = request.getParameter("range_mid_to");
         
-        String CommandQuery = "time_am='"+time_am+"', "
+        String CommandQuery = " am_amt_from='"+am_amt_from+"', "
+                    + " am_amt_to='"+am_amt_to+"', "
+                    + " am_amt_time='"+am_amt_time+"', "
+                    + " pm_amt_from='"+pm_amt_from+"', "
+                    + " pm_amt_to='"+pm_amt_to+"', "
+                    + " pm_amt_time='"+pm_amt_time+"', "
+                    + " eve_amt_from='"+eve_amt_from+"', "
+                    + " eve_amt_to='"+eve_amt_to+"', "
+                    + " eve_amt_time='"+eve_amt_time+"', "
+                    + " mid_amt_from='"+mid_amt_from+"', "
+                    + " mid_amt_to='"+mid_amt_to+"', "
+                    + " mid_amt_time='"+mid_amt_time+"', "
+                    + " time_am='"+time_am+"', "
                     + " range_am_from='"+range_am_from+"', "
                     + " range_am_to='"+range_am_to+"', "
                     + " time_pm='"+time_pm+"', " 
@@ -93,23 +100,16 @@ try{
             ExecuteQuery("insert into tbldummysettings set " + CommandQuery);
         }
 
-        mainObj.put("status", "OK");
-        mainObj.put("message","Settings successfully saved");
         mainObj = LoadDummySettings(mainObj);
-        out.print(mainObj);
+        out.print(Success(mainObj, "Settings successfully saved"));
 
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
     }
+    
 }catch (Exception e){
-      mainObj.put("status", "ERROR");
-      mainObj.put("message", e.toString());
-      mainObj.put("errorcode", "400");
-      out.print(mainObj);
-      logError("dashboard-x-dummy",e.toString());
+      out.print(Error(mainObj, e.toString(), "400"));
+      logError("dashboard-x-DUMMY",e.toString());
 }
 %>
 

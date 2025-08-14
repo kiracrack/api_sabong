@@ -134,15 +134,3 @@
     }
 }
 %>
-
- <%!public String BankingStatus(String str){ 
-    String status = "";
-    switch (str) {
-        case "approved": status = " confirmed=1 and cancelled=0 "; break;
-        case "rejected": status = " cancelled=1 "; break;
-        case "pending": status = " confirmed=0 and cancelled=0 "; break;
-        default:  break;
-        }
-    return status;
-}
-%>

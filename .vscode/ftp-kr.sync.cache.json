@@ -1,0 +1,22 @@
+{
+  "ftp://obslabz.com:21@sbg@obslabz.com": {
+    ".ftpquota": {
+      "type": "-",
+      "size": 7,
+      "lmtime": 0,
+      "modified": false
+    },
+    "META-INF": {},
+    "WEB-INF": {},
+    "controller": {},
+    "dashboard": {},
+    "index.jsp": {
+      "type": "-",
+      "size": 4964,
+      "lmtime": 0,
+      "modified": false
+    },
+    "module": {}
+  },
+  "$version": 1
+}
