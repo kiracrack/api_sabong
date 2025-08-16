@@ -21,12 +21,12 @@ try{
     }
 
     if(x.equals("load_operator")){
-        mainObj = load_operators(mainObj);
-        mainObj = select_operators(mainObj);
+        mainObj = getOperators(mainObj);
+        mainObj = getSelectOperator(mainObj);
         out.print(Success(mainObj, "Successfull Synchronized"));
     
     }else if(x.equals("select_operator")){
-        mainObj = select_operators(mainObj);
+        mainObj = getSelectOperator(mainObj);
         out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else if(x.equals("set_operator_info")){
@@ -63,7 +63,7 @@ try{
             mainObj.put("message","Operator Sucessfully Updated");
             LogActivity(userid,"update operator's " + companyname + " information");   
         }
-        mainObj = load_operators(mainObj);
+        mainObj = getOperators(mainObj);
         mainObj.put("status", "OK");
         out.print(mainObj);    
         
@@ -75,7 +75,7 @@ try{
         ExecuteQuery("update tbloperator set actived=0, blocked=1, blockedreason='"+rchar(reason)+"',dateblocked=current_timestamp where companyid = '"+companyid+"';");
         LogActivity(userid,"blocked operator " + companyname + "");   
 
-        mainObj = load_operators(mainObj);
+        mainObj = getOperators(mainObj);
         out.print(Success(mainObj, "Operator successfully blocked"));
 
     }else if(x.equals("unblock_operator")){
@@ -85,7 +85,7 @@ try{
         ExecuteQuery("update tbloperator set blocked=0, blockedreason='',dateblocked=null where companyid = '"+companyid+"';");
         LogActivity(userid,"unblocked operator " + companyname + "");   
 
-        mainObj = load_operators(mainObj);
+        mainObj = getOperators(mainObj);
         out.print(Success(mainObj, "Operator successfully unblocked"));
  
     }else{

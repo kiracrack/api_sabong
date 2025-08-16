@@ -93,7 +93,7 @@ try{
 
         /*if(push_web_update){
             ActiveEventVideo event = new ActiveEventVideo(videoid);
-            apiObj = api_event_video(apiObj, event.eventid);
+            apiObj = controller_event_video(apiObj, event.eventid);
             PusherPost(event.eventid, apiObj);
         }*/
         

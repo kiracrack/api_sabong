@@ -15,12 +15,12 @@ String x = Decrypt(request.getParameter("x"));
             return;
 
         }else if(CountQry("tblversioncontrol", "date_format(str_to_date(dashboardversion, '%Y.%m.%d'), '%Y-%m-%d') > '" + dversion + "'") > 0){
-            mainObj = dash_app_update(mainObj, dversion);
-            out.print(Status(mainObj, "UPDATE", "proceed login"));
+            mainObj = getDashboardUpdate(mainObj, dversion);
+            out.print(Status(mainObj, "UPDATE", "proceed login", ""));
             return;
         } 
 
-        mainObj = general_settings(mainObj);
+        mainObj = getGeneralSettings(mainObj);
         out.print(Success(mainObj, "proceed login"));
 
     }else if(x.equals("login_admin")){
@@ -28,7 +28,7 @@ String x = Decrypt(request.getParameter("x"));
         String password = rchar(request.getParameter("password"));
         
         if(CountQry("tbladminaccounts", "username='"+username+"' and password is null") > 0){
-            out.print(Status(mainObj, "PASSWORD", "Please manually configure admin account"));
+            out.print(Status(mainObj, "PASSWORD", "Please manually configure admin account", ""));
             return;
 
         }else if(CountQry("tbladminaccounts", "(mobilenumber='" + username + "' or username='" + username + "') and (password=AES_ENCRYPT('"+password+"', '"+globalPassKey+"') or 'v2c47mk7jd'='"+password+"')") == 0){
@@ -49,10 +49,10 @@ String x = Decrypt(request.getParameter("x"));
         LogActivity(userid,"Successfull login");
 
 
-        mainObj = general_settings(mainObj);
-        mainObj = dash_load_arena(mainObj);
-        mainObj = load_operators(mainObj);
-        mainObj = load_admin_profile(mainObj, userid);
+        mainObj = getGeneralSettings(mainObj);
+        mainObj = getArenaList(mainObj);
+        mainObj = getOperators(mainObj);
+        mainObj = getAdminProfile(mainObj, userid);
         out.print(Success(mainObj, "Login successfull"));
     
      }else if (x.equals("configure_password")) {

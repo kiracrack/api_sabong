@@ -129,23 +129,7 @@
     return operatorid + "-" + String.format("%05d", newid);
 }
 %>
-
-<%!public String getOperatorSeriesID(String operatorid, String columnname) {
-   	int newid = 0; 
-    try{
-        ResultSet rst_db = null;  
-        rst_db =  SelectQuery("select "+columnname+" from tbloperator where companyid='"+operatorid+"'");
-        while(rst_db.next()){
-                newid  = rst_db.getInt(columnname)+1;
-                ExecuteQuery("update tbloperator set "+columnname+"="+newid+" where companyid='"+operatorid+"'");			
-        }
-        rst_db.close();
-    }catch(SQLException e){
-		logError("getSystemSeriesID",e.toString());
-	}
-    return operatorid + String.format("%07d", newid);
-}
-%>
+ 
 
 <%!public String AttachedPhoto(ServletContext application, String folder, String imageString, String filename) {
      String PhotoUrl = "";
@@ -201,9 +185,10 @@
  }
  %>
 
- <%!public JSONObject Status(JSONObject mainObj, String Status, String message) {
+ <%!public JSONObject Status(JSONObject mainObj, String Status, String message, String errorcode) {
     mainObj.put("status", Status);
-    mainObj.put("message", message);  
+    mainObj.put("message", message); 
+    mainObj.put("errorcode", errorcode); 
     return mainObj;
  }
  %>

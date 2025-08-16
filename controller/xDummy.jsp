@@ -1,5 +1,5 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xSabongModule.jsp" %>
+<%@ include file="../module/xGameModule.jsp" %>
 
 <%
    JSONObject mainObj =new JSONObject();
@@ -10,30 +10,20 @@ try{
     String sessionid = request.getParameter("sessionid");
 
     if(x.isEmpty() || deviceid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
 
     }else if(isControllerRemoved(deviceid)){
-        mainObj.put("status", "BLOCKED");
-        mainObj.put("message","Your controller was removed by administrator!");
-        mainObj.put("errorcode", "100");
-        out.print(mainObj);
+        out.print(Status(mainObj, "BLOCKED", "Your controller was removed by administrator!", "403"));
         return;
 
     }else if(isControllerBlocked(deviceid)){
-        mainObj.put("status", "BLOCKED");
-        mainObj.put("message","Your controller was blocked by administrator!");
-        mainObj.put("errorcode", "100");
-        out.print(mainObj);
+        out.print(Status(mainObj, "BLOCKED", "Your controller was removed by administrator!", "403"));
         return;
     }
 
     if(x.equals("dummy_post_bet")){ 
         String eventid = request.getParameter("eventid");
-        String operatorid = request.getParameter("operatorid");
         String accountid = request.getParameter("accountid");
         String dummy_id = request.getParameter("dummy_id");
         String dummy_name = request.getParameter("dummy_name");
@@ -45,51 +35,37 @@ try{
         String fightkey = event.fightkey;
         
         if(CountQry("tblevent", "eventid='"+eventid+"' and (current_status='closed' or current_status='result')") > 0 ){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message","Current fight is already closed!");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Current fight is already closed!", "100"));
             return;
             
         }else if(CountQry("tblevent", "eventid='"+eventid+"' and current_status='standby'") > 0 ){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message","Current fight is not yet open!");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Current fight is not yet open!", "100"));
             return;
 
         }else if(CountQry("tblevent", "eventid='"+eventid+"' and current_status='cancelled'") > 0 ){
-            mainObj.put("status", "ERROR");
-            mainObj.put("message","Current fight is cancelled!");
-            out.print(mainObj);
+            out.print(Error(mainObj, "Current fight is cancelled!", "100"));
             return;
-
         }
 
-        ExecutePostBet("android", eventid, sessionid, appreference, operatorid, accountid, bet_choice , Double.parseDouble(bet_amount), "",false, true, false, dummy_id, dummy_name);
+        ExecutePostBet(eventid, sessionid, appreference, "", accountid, dummy_name, bet_choice, Double.parseDouble(bet_amount), false, true);
 
-        mainObj.put("status", "OK");
-        mainObj = CurrentFightSummary(mainObj, fightkey, operatorid);
-        mainObj.put("message","request returned valid");
-        out.print(mainObj);
+        mainObj = getBetSummary(mainObj, fightkey);
+        out.print(Success(mainObj, "request returned valid"));
 
-        if(operatorid.equals(GlobalDefaultOperator)){
-            JSONObject apiObj = new JSONObject();
-            apiObj.put("plasada", GlobalPlasada);
-            apiObj = api_current_fight_summary(apiObj, fightkey);
-            PusherPost(eventid, apiObj);
-        }
+        JSONObject apiObj = new JSONObject();
+        apiObj.put("plasada", GlobalPlasadaRate);
+        apiObj =  api_fight_summary(apiObj, fightkey);
+        PusherPost(eventid, apiObj);
        
-
     }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
+        
     }
 }catch (Exception e){
-      mainObj.put("status", "ERROR");
-      mainObj.put("message", e.toString());
-      mainObj.put("errorcode", "400");
-      out.print(mainObj);
-      logError("controller-x-dummy",e.getMessage());
+      out.print(Error(mainObj, e.toString(), "400"));
+      logError("controller-x-dummy",e.toString());
 }
 %>
+
+
+

@@ -61,8 +61,8 @@
 
 <%!public class GeneralSettings{
     public String betwacherid, dummy_account_1, dummy_account_2;
-    public boolean enable_agent_commission, enableBetWatcher, betwatcherincludedummybets, enablebetbalancer;
-    public double minbet, maxbet, op_com_rate, be_com_rate, draw_rate, betwatchermaxamount, betwatcherodds, betbalanceramount;
+    public boolean enable_agent_commission, enableBetWatcher, enablebetbalancer;
+    public double minbet, maxbet, plasada_rate, plasada_base, draw_rate, betwatchermaxamount, betwatcherodds, betbalanceramount;
     public GeneralSettings(){
         try{
             ResultSet rst = null; 
@@ -74,19 +74,20 @@
 
                 this.minbet = rst.getDouble("minbet");
                 this.maxbet = rst.getDouble("maxbet");
+                this.plasada_rate = rst.getDouble("plasada_rate");
+                this.plasada_base = rst.getDouble("plasada_base");
                 this.draw_rate = rst.getDouble("draw_rate");
 
                 this.enableBetWatcher = rst.getBoolean("enablebetwatcher");
                 this.betwatchermaxamount = rst.getDouble("betwatchermaxamount");
                 this.betwatcherodds = rst.getDouble("betwatcherodds");
-                this.betwatcherincludedummybets = rst.getBoolean("betwatcherincludedummybets");
 
                 this.enablebetbalancer = rst.getBoolean("enablebetbalancer");
                 this.betbalanceramount = rst.getDouble("betbalanceramount");
             }
             rst.close();
         }catch(SQLException e){
-            logError("class-operator-info",e.toString());
+            logError("class-general-settings",e.toString());
         }
     }
 }%>
@@ -111,8 +112,8 @@
                 ratioMeron =  totalAllBets / totalMeron;
                 ratioWala =  totalAllBets / totalWala;
 
-                oddMeron = ratioMeron-(ratioMeron * GlobalPlasada);
-                oddWala = ratioWala-(ratioWala * GlobalPlasada);
+                oddMeron = ratioMeron-(ratioMeron * GlobalPlasadaRate);
+                oddWala = ratioWala-(ratioWala * GlobalPlasadaRate);
             }
         }catch(SQLException e){
             logError("class-final-bets",e.toString());
@@ -169,7 +170,7 @@
     public int countMeron,countDraw,countWala;
     public double totalMeron,totalDraw,totalWala;
     public double totalWinAmount,totalLoseAmount,totalPayout;
-    public FightSummary(String fightkey, String operatorid){
+    public FightSummary(String fightkey){
         try{
             ResultSet rst = null; 
             rst =  QuerySelect("select count(if(bet_choice='M', 1, NULL)) as count_meron, " 
@@ -181,7 +182,7 @@
                                 + " ifnull(sum(win_amount),0) as total_win, " 
                                 + " ifnull(sum(lose_amount),0) as total_lose, "
                                 + " ifnull(sum(payout_amount),0) as total_payout "
-                                + " from tblfightbets where fightkey='"+fightkey+"' and operatorid='"+operatorid+"' and dummy=0 and banker=0");
+                                + " from tblfightbets where fightkey='"+fightkey+"' and dummy=0 and banker=0");
             while(rst.next()){
                 this.countMeron = rst.getInt("count_meron");
                 this.countDraw = rst.getInt("count_draw");
@@ -333,3 +334,60 @@
     }
 }%>
  
+<%!public class BonusSettings{
+    public double bonusinitialamount, bonusdisplayminamount;
+    public int bonusrandomdays;
+    public BonusSettings(){
+        try{
+            ResultSet rst = null; 
+            rst =  SelectQuery("select bonusinitialamount,bonusdisplayminamount,bonusrandomdays from tblgeneralsettings");
+            while(rst.next()){
+                this.bonusinitialamount = rst.getDouble("bonusinitialamount");
+                this.bonusdisplayminamount = rst.getDouble("bonusdisplayminamount");
+                this.bonusrandomdays = rst.getInt("bonusrandomdays");
+            }
+            rst.close();
+        }catch(SQLException e){
+            logError("class-bonus-settings",e.toString());
+        }
+    }
+}%>
+
+<%!public class ActiveBonusInfo{
+    public String id;
+    public double totalbonus;
+    public ActiveBonusInfo(){
+        try{
+            ResultSet rst = null; 
+            rst =  SelectQuery("select id, totalbonus from tblbonusinfo where closed=0 and current_timestamp >= schedule");
+            while(rst.next()){
+                this.id = rst.getString("id");
+                this.totalbonus = rst.getDouble("totalbonus");
+            }
+            rst.close();
+        }catch(SQLException e){
+            logError("class-active-bonus",e.toString());
+        }
+    }
+}%>
+
+<%!public class JackpotInfo{
+    public String sessionid,appreference,referenceno;
+    public double amount;
+    public JackpotInfo(String id){
+        try{
+            ResultSet rst = null; 
+            rst =  SelectQuery("select sessionid,appreference,referenceno,amount from tblbonuslogs where id='"+id+"'");
+            while(rst.next()){
+                this.sessionid = rst.getString("sessionid");
+                this.appreference = rst.getString("appreference");
+                this.referenceno = rst.getString("referenceno");
+                this.amount = rst.getDouble("amount");
+
+            }
+            rst.close();
+        }catch(SQLException e){
+            logError("class-active-bonus",e.toString());
+        }
+    }
+}%>

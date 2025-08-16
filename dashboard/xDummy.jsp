@@ -39,11 +39,11 @@ try{
         mainObj = LoadDummyNames(mainObj);
         out.print(Success(mainObj, "Dummy account successfully uploaded!"));
 
-    }else if(x.equals("load_dummy_settings")){
+    }else if(x.equals("load_getDummySettings")){
         mainObj = LoadDummySettings(mainObj);
         out.print(Success(mainObj, "Successfull Synchronized"));
     
-    }else if(x.equals("set_dummy_settings")){
+    }else if(x.equals("set_getDummySettings")){
         String am_amt_from = request.getParameter("am_amt_from");
         String am_amt_to = request.getParameter("am_amt_to");
         String am_amt_time = request.getParameter("am_amt_time");
@@ -120,7 +120,7 @@ try{
 %>
 
 <%!public JSONObject LoadDummySettings(JSONObject mainObj) {
-      mainObj = DBtoJson(mainObj, "dummy_settings", "select * from tbldummysettings");
+      mainObj = DBtoJson(mainObj, "getDummySettings", "select * from tbldummysettings");
       return mainObj;
 }
 %>

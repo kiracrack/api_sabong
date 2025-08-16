@@ -33,20 +33,29 @@
 <%@ page import="java.util.stream.Collectors" %>
 
 <%@ page import="connection.*" %>
+<%@ include file="xPusher.jsp" %>
 <%@ include file="xLibrary.jsp" %>
 <%@ include file="xSecurity.jsp" %>
 <%@ include file="xFormatting.jsp" %>
 <%@ include file="xRecordClass.jsp" %>
 <%@ include file="xDatabaseClass.jsp" %>
+<%@ include file="xApiModule.jsp" %>
 <%@ include file="xRecordModule.jsp" %>
 <%@ include file="xRecordQuery.jsp" %>
 
 <%!
 public String GlobalHostName = "";
 
-public String GlobalEnvironment = "";
-public String GlobalDefaultOperator = "";
-public double GlobalPlasada = 0;
+
+public Pusher pusher;
+public String GlobalPusherAppID = "";
+public String GlobalPusherAppKey = "";
+public String GlobalPusherAppSecret = "";
+public String GlobalPusherAppCluster = "";
+public String GlobalPusherAppChannel = "";
+
+public double GlobalPlasadaBase = 0;
+public double GlobalPlasadaRate = 0;
 
 public String globalInvalidRequest = "Invalid request command code";
 public String globalMaintainanceMessage = "Server is currently undergoing maintenance. please try again later";
@@ -69,9 +78,14 @@ try{
 					+ " DATE_FORMAT(CURRENT_TIMESTAMP, '%r') as time_today, " 
 					+ " date_format(current_timestamp, '%M %d, %y %r') as datetrn from tblgeneralsettings");
 	while(rs.next()){
-		globalMaintenance = rs.getBoolean("maintenance");
-		GlobalEnvironment = rs.getString("environment");
-		GlobalPlasada = rs.getDouble("plasada");
+		GlobalPusherAppID = rs.getString("pusher_app_id");
+		GlobalPusherAppKey = rs.getString("pusher_app_key");
+		GlobalPusherAppSecret = rs.getString("pusher_app_secret");
+		GlobalPusherAppCluster = rs.getString("pusher_app_cluster");
+		GlobalPusherAppChannel = rs.getString("pusher_app_channel");
+
+		GlobalPlasadaBase = rs.getDouble("plasada_base");
+		GlobalPlasadaRate = rs.getDouble("plasada_rate");
          
 		GlobalDatetrn = rs.getString("datetrn");
 		GlobalDate = rs.getString("date_today");
@@ -80,6 +94,12 @@ try{
 		GlobalHostName = "https://" + request.getServerName();
 	}
 	rs.close();
+
+	if(!GlobalPusherAppID.isEmpty()){
+		pusher = new Pusher(GlobalPusherAppID, GlobalPusherAppKey, GlobalPusherAppSecret);
+		pusher.setCluster(GlobalPusherAppCluster);
+		pusher.setEncrypted(true);
+	}
 
 }catch(SQLException e){
 	logError("db-sql-exception", e.toString());

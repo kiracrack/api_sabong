@@ -1,6 +1,6 @@
 <%!public void PusherPost(String event, JSONObject apiObj){          
     try {
-        if(!globalPusherAppID.isEmpty()){
+        if(!GlobalPusherAppID.isEmpty()){
             Thread pusherTread = new Thread(new PusherTask(event, apiObj));
             pusherTread.start();
         }
@@ -27,7 +27,7 @@
 
 <%!public void PusherTrigger(String event, JSONObject apiObj){          
     try {
-        pusher.trigger(globalPusherAppChannel, Encrypt(event), apiObj);
+        pusher.trigger(GlobalPusherAppChannel, Encrypt(event), apiObj);
     } catch (Exception e) {
         e.printStackTrace();
     }

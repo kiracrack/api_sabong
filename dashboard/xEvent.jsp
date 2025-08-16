@@ -21,7 +21,7 @@ try{
     }
       
     if(x.equals("load_arena")){
-        mainObj = dash_load_arena(mainObj);
+        mainObj = getArenaList(mainObj);
         out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else if(x.equals("set_arena_info")){
@@ -50,7 +50,7 @@ try{
         }
 
         mainObj.put("status", "OK");
-        mainObj = dash_load_arena(mainObj);
+        mainObj = getArenaList(mainObj);
         out.print(mainObj);
 
     }else if(x.equals("delete_arena")){
@@ -58,7 +58,7 @@ try{
         
         ExecuteQuery("DELETE FROM tblarena where arenaid = '"+arenaid+"';");
 
-        mainObj = dash_load_arena(mainObj);
+        mainObj = getArenaList(mainObj);
         out.print(Success(mainObj, "Arena successfully deleted!"));
 
     }else if(x.equals("load_event")){

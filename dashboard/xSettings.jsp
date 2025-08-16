@@ -21,8 +21,8 @@ try{
     }
 
     if(x.equals("load_settings")){
-        mainObj = general_settings(mainObj);
-        mainObj = dummy_accounts(mainObj);
+        mainObj = getGeneralSettings(mainObj);
+        mainObj = getDummaryAccount(mainObj);
         out.print(Success(mainObj, "Successfull Synchronized"));
 
     }else if(x.equals("update_settings")){
@@ -51,7 +51,7 @@ try{
                             + " dummy_account_1='"+dummy_account_1+"', "
                             + " dummy_account_2='"+dummy_account_2+"'");
 
-        mainObj = general_settings(mainObj);
+        mainObj = getGeneralSettings(mainObj);
         out.print(Success(mainObj, "Settings successfully updated")); 
  
     }else{

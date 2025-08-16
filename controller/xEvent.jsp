@@ -1,5 +1,4 @@
 <%@ include file="../module/db.jsp" %>
-<%@ include file="../module/xSabongModule.jsp" %>
 
 <%
     JSONObject mainObj =new JSONObject();
@@ -10,61 +9,42 @@ try{
     String deviceid = request.getParameter("deviceid");
     String sessionid = request.getParameter("sessionid");
     
-
-    if(x.isEmpty() || deviceid.isEmpty() || sessionid.isEmpty()){
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+   if(x.isEmpty() || deviceid.isEmpty() || sessionid.isEmpty()){
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
         return;
-    
+
     }else if(isControllerRemoved(deviceid)){
-        mainObj.put("status", "BLOCKED");
-        mainObj.put("message","Your controller was removed by administrator!");
-        mainObj.put("errorcode", "100");
-        out.print(mainObj);
+        out.print(Status(mainObj, "BLOCKED", "Your controller was removed by administrator!", "403"));
         return;
 
     }else if(isControllerBlocked(deviceid)){
-        mainObj.put("status", "BLOCKED");
-        mainObj.put("message","Your controller was blocked by administrator!");
-        mainObj.put("errorcode", "100");
-        out.print(mainObj);
+        out.print(Status(mainObj, "BLOCKED", "Your controller was removed by administrator!", "403"));
         return;
     }
 
     if(x.equals("event_info")){ 
         String eventid = request.getParameter("eventid");
+        EventInfo event = new EventInfo(eventid, false);
 
-        mainObj.put("status", "OK");
         mainObj = getEventInfo(mainObj, eventid);
-        mainObj = CurrentEventSummary(mainObj, eventid);
-        mainObj.put("message", "data synchronized");
-        out.print(mainObj); 
+        mainObj = getBetSummary(mainObj, event.fightkey);
+        out.print(Success(mainObj, "data synchronized"));
     
     }else if(x.equals("arena")){ 
-        mainObj.put("status", "OK");
         mainObj = getActiveArena(mainObj);
-        mainObj.put("message", "data synchronized");
-        out.print(mainObj); 
+        out.print(Success(mainObj, "data synchronized"));
 
     }else if(x.equals("video_source")){ 
-        mainObj.put("status", "OK");
-        mainObj = LoadVideoSource(mainObj);
-        mainObj.put("message", "data synchronized");
-        out.print(mainObj); 
+        mainObj = getVideoSource(mainObj);
+        out.print(Success(mainObj, "data synchronized")); 
 
     }else if(x.equals("message_template")){ 
-        mainObj.put("status", "OK");
-        mainObj = LoadMessageTemplate(mainObj);
-        mainObj.put("message", "data synchronized");
-        out.print(mainObj); 
+        mainObj = getMessageTemplate(mainObj);
+        out.print(Success(mainObj, "data synchronized"));
 
     }else if(x.equals("announcement")){ 
-        mainObj.put("status", "OK");
-        mainObj = LoadAnnouncement(mainObj);
-        mainObj.put("message", "data synchronized");
-        out.print(mainObj); 
+        mainObj = getAnnouncement(mainObj);
+        out.print(Success(mainObj, "data synchronized"));
     
     }else if(x.equals("timer_settings")){ 
         String arenaid = request.getParameter("arenaid");
@@ -74,21 +54,11 @@ try{
         boolean auto_closed = Boolean.parseBoolean(request.getParameter("auto_closed"));
         
         ExecuteQuery("update tblarena set auto_lastcall="+auto_lastcall+", timer_lastcall='"+lastcall+"', auto_closed="+auto_closed+", timer_closed='"+closed+"' where arenaid='"+arenaid+"'");
-        mainObj.put("status", "OK");
         mainObj = getActiveArena(mainObj);
-        mainObj.put("message", "Settings successfully saved!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Settings successfully saved!"));
 
     }else if(x.equals("push_notification")){ 
-        String aid = request.getParameter("aid");
-        PromoInfo promo = new PromoInfo(aid);
-
-        SendBroadcastPromo(promo.title, promo.push_message, promo.banner_url);
-
-        mainObj.put("status", "OK");
-        mainObj.put("message", promo.category + " successfully notified all devices!");
-        out.print(mainObj);
-
+        
 
     }else if(x.equals("activate_video")){ 
         String eventid = request.getParameter("eventid");
@@ -108,12 +78,10 @@ try{
 
         ExecuteQuery("update tblevent set live_sourceid='"+sourceid+"', live_mode='"+mode+"', "+query+" where eventid='"+eventid+"'");
        
-        mainObj.put("status", "OK");
         mainObj.put("live_title", sourcename);
         mainObj.put("live_val", val);
         mainObj.put("live_mode", mode);
-        mainObj.put("message", (mode.equals("YOUTUBE") ? "Youtube" : "Live stream") + " successfully activated!");
-        out.print(mainObj);
+        out.print(Success(mainObj, (mode.equals("YOUTUBE") ? "Youtube" : "Live stream") + " successfully activated!"));
 
         apiObj = api_event_video(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -124,10 +92,8 @@ try{
 
         ExecuteQuery("update tblevent set event_title='"+rchar(title)+"' where eventid='"+eventid+"'");
        
-        mainObj.put("status", "OK");
         mainObj.put("video_title", title);
-        mainObj.put("message", "Video title successfully changed!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Video title successfully changed!"));
 
         apiObj = api_event_notice(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -139,11 +105,9 @@ try{
 
         ExecuteQuery("update tblevent set event_reminders_message='"+rchar(message_reminder)+"', event_reminders_warning='"+rchar(warning_reminder)+"' where eventid='"+eventid+"'");
        
-        mainObj.put("status", "OK");
         mainObj.put("warning_reminder", warning_reminder);
         mainObj.put("message_reminder", message_reminder);
-        mainObj.put("message", "Reminder successfully changed!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Reminder successfully changed!"));
 
         apiObj = api_event_notice(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -164,10 +128,8 @@ try{
             mainObj.put("fightkey", event.fightkey);
         }
 
-        mainObj.put("status", "OK");
         mainObj.put("fightnumber", FightNumber);
-        mainObj.put("message", "Fight number successfully changed!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Fight number successfully changed!"));
 
         apiObj = api_fight_number(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -178,10 +140,8 @@ try{
 
         ExecuteQuery("update tblevent set event_standby=1,event_standby_message='"+rchar(message)+"' where eventid='"+eventid+"'");
        
-        mainObj.put("status", "OK");
         mainObj.put("video_state", String.valueOf(true));
-        mainObj.put("message", "Video successfully standby!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Video successfully standby!"));
 
         apiObj = api_event_video(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -191,10 +151,8 @@ try{
 
         ExecuteQuery("update tblevent set event_standby=0 where eventid='"+eventid+"'");
        
-        mainObj.put("status", "OK");
         mainObj.put("video_state", String.valueOf(false));
-        mainObj.put("message", "Video successfully resume!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Video successfully resume!"));
 
         apiObj = api_event_video(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -205,12 +163,8 @@ try{
 
         ExecuteQuery("update tblevent set event_closed="+event_state+ (event_state ? ", event_date_closed=current_timestamp " : "") + " where eventid='"+eventid+"'");
 
-        if(!event_state) SendBroadcastOpenEvent();
-       
-        mainObj.put("status", "OK");
         mainObj.put("event_state", String.valueOf(event_state));
-        mainObj.put("message", "Event successfully "+(event_state? "closed" : "open")+"!");
-        out.print(mainObj);
+        out.print(Success(mainObj, "Event successfully "+(event_state? "closed" : "open")+"!"));
 
         apiObj = api_event_info(apiObj, eventid);
         PusherPost(eventid, apiObj);
@@ -265,50 +219,22 @@ try{
         ExecuteQuery("INSERT into tblfightlogs2 (accountid,sessionid,arenaid,eventid,fightkey,description,amount) select accountid,sessionid,arenaid,eventid,fightkey,description,amount from tblfightlogs where arenaid='"+arenaid+"';");
         ExecuteQuery("DELETE from tblfightlogs where arenaid='"+arenaid+"'");
 
-        SendBroadcastNewEvent();
-
-        mainObj.put("status", "OK");
         mainObj = getEventInfo(mainObj, new_eventid);
         mainObj = getActiveArena(mainObj);
         mainObj = getGeneralSettings(mainObj);
-        mainObj = getDummyAccount(mainObj);
-        mainObj.put("message", "Event successfully created!");
-        out.print(mainObj);
+        mainObj = getDummySettings(mainObj);
+        out.print(Success(mainObj, "Event successfully created!"));
 
         apiObj = api_event_info(apiObj, new_eventid);
         PusherPost(new_eventid, apiObj);
 
-    }else{
-        mainObj.put("status", "ERROR");
-        mainObj.put("message","request not valid");
-        mainObj.put("errorcode", "404");
-        out.print(mainObj);
+     }else{
+        out.print(Error(mainObj, globalInvalidRequest, "404"));
+        
     }
 }catch (Exception e){
-      mainObj.put("status", "ERROR");
-      mainObj.put("message", e.toString());
-      mainObj.put("errorcode", "400");
-      out.print(mainObj);
+      out.print(Error(mainObj, e.toString(), "400"));
       logError("controller-x-event",e.toString());
 }
 %>
 
-<%!public JSONObject LoadVideoSource(JSONObject mainObj) {
-      mainObj = DBtoJson(mainObj, "video",  "select * from tblvideosource where source_working=1 and deleted=0");
-      return mainObj;
- }
- %>
-
-<%!public JSONObject LoadMessageTemplate(JSONObject mainObj) {
-      mainObj = DBtoJson(mainObj, "template",  "select * from tbltemplate");
-      return mainObj;
- }
- %>
-
- <%!public JSONObject LoadAnnouncement(JSONObject mainObj) {
-      mainObj = DBtoJson(mainObj, "announcement",  "SELECT * FROM `tblpromo` where category='ANNOUNCEMENT';");
-      return mainObj;
- }
- %>
-
- 

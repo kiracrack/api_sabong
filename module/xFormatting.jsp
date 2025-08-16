@@ -113,7 +113,6 @@
 }
 %>
 
-
 <%!public String RandomBetPercentage(){ 
     Random rand = new Random();
     return String.valueOf(rand.nextInt((98 - 80) + 1) + 80);
@@ -123,6 +122,38 @@
 <%!public String RandomBetBalancer(){ 
     Random rand = new Random();
     return String.valueOf(rand.nextInt((60 - 30) + 1) + 30);
+}
+%>
+
+<%!public String RandomBonusPercentage(){ 
+    Random rand = new Random();
+    int method =  rand.nextInt(10 - 1) + 1;
+    int method2 =  rand.nextInt(10 - 1) + 1;
+    if(method % 2 == 0){
+        if(method2 % 2 == 0){
+            return RandomBonusBig();
+        }else{
+            return RandomBonusAll();
+        }
+	}else{
+		return RandomBonusAll();
+	}
+}
+%>
+
+<%!public String RandomBonusBig(){ 
+    final String[] bonus_rate = {"40", "45", "50"};
+    Random random = new Random();
+    int index = random.nextInt(bonus_rate.length);
+    return bonus_rate[index];
+}
+%>
+
+<%!public String RandomBonusAll(){ 
+    final String[] bonus_rate = {"10", "15", "20", "25", "30", "35", "40", "45", "50"};
+    Random random = new Random();
+    int index = random.nextInt(bonus_rate.length);
+    return bonus_rate[index];
 }
 %>
 

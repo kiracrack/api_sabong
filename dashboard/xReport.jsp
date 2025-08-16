@@ -66,11 +66,9 @@ try{
 
 <%!public JSONObject fight_bets_report(JSONObject mainObj, String operatorid, String datefrom, String dateto) {
       mainObj = DBtoJson(mainObj, "report", "select accountid, " 
-                              + " (select fullname from tblsubscriber where accountid=a.accountid) as fullname, "
+                              + " accountname, "
                               + " accountid as 'Account No.', "
-                              + " (select fullname from tblsubscriber where accountid=a.accountid) as 'Account Name', "
-                              + " (select fullname from tblsubscriber where accountid=a.masteragentid) as 'Master Agent', "
-                              + " (select fullname from tblsubscriber where accountid=a.agentid) as 'Agent', "
+                              + " accountname as 'Account Name', "
                               + " platform as 'Platform', " 
                               + " (select arenaname from tblarena where arenaid=a.arenaid) as 'Arena', " 
                               + " eventid as 'Event', " 
@@ -128,14 +126,10 @@ try{
 <%!public JSONObject fight_bets_summary(JSONObject mainObj, String operatorid, String datefrom, String dateto) {
       mainObj = DBtoJson(mainObj, "report", "select "
                               + " accountid, " 
-                              + " (select fullname from tblsubscriber where accountid=a.accountid) as fullname, "
+                              + " accountname as fullname, "
                               + " accountid as 'Account No.', " 
-                              + " (select fullname from tblsubscriber where accountid=a.accountid) as 'Account Name', " 
-                              + " (select fullname from tblsubscriber where accountid=a.masteragentid) as 'Master Agent', " 
-                              + " (select fullname from tblsubscriber where accountid=a.agentid) as 'Agent', " 
                               + " group_concat(distinct (select arenaname from tblarena where arenaid=a.arenaid)) as 'Arena', " 
                               + " group_concat(distinct platform) as 'Platform', " 
-                              + " (select creditbal from tblsubscriber where accountid=a.accountid) as 'Score Balance', " 
                               + " sum(win_amount) - sum(lose_amount) as 'Win/Loss' "
                               + " from tblfightbets2 as a where operatorid='"+operatorid+"' and date_format(datetrn,'%Y-%m-%d') between '"+datefrom+"' and '"+dateto+"' and cancelled=0 "
                               + " group by accountid");
