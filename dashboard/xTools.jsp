@@ -70,21 +70,21 @@ try{
         String dateto = request.getParameter("dateto");
 
         mainObj = LoadFightResultLogs(mainObj, datefrom, dateto);
-        out.print(Success(mainObj, "Successfull Synchronized")); 
+        out.print(Success(mainObj, globaApiValidMessage)); 
 
     }else if(x.equals("fight_transaction")){
         String fightkey = request.getParameter("fightkey");
         String mode = request.getParameter("mode");
 
         mainObj = LoadFightResultDetails(mainObj, fightkey);
-        out.print(Success(mainObj, "Successfull Synchronized")); 
+        out.print(Success(mainObj, globaApiValidMessage)); 
 
     }else if(x.equals("cancelled_fight_logs")){
         String datefrom = request.getParameter("datefrom");
         String dateto = request.getParameter("dateto");
 
         mainObj = LoadCancelledFightLogs(mainObj, datefrom, dateto);
-        out.print(Success(mainObj, "Successfull Synchronized")); 
+        out.print(Success(mainObj, globaApiValidMessage)); 
 
 
     }else if(x.equals("missing_bet_logs")){
@@ -92,7 +92,7 @@ try{
         String dateto = request.getParameter("dateto");
 
         mainObj = LoadMissingBetLogs(mainObj, datefrom, dateto);
-        out.print(Success(mainObj, "Successfull Synchronized")); 
+        out.print(Success(mainObj, globaApiValidMessage)); 
 
     }else{
         out.print(Error(mainObj, globalInvalidRequest, "404"));

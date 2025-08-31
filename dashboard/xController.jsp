@@ -22,7 +22,7 @@ try{
 
     if(x.equals("load_controller")){
         mainObj = LoadController(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("approved_controller")){
         boolean approved = Boolean.parseBoolean(request.getParameter("approved"));

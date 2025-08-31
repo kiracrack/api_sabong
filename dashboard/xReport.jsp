@@ -22,7 +22,7 @@ try{
 
     if(x.equals("report_template")){
         mainObj = load_report_template(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("fight_bets_report")){
         String operatorid = request.getParameter("operatorid");
@@ -30,7 +30,7 @@ try{
         String dateto = request.getParameter("dateto");
 
         mainObj = fight_bets_report(mainObj,operatorid,datefrom,dateto);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("fight_bets_summary")){
         String operatorid = request.getParameter("operatorid");
@@ -38,7 +38,7 @@ try{
         String dateto = request.getParameter("dateto");
 
         mainObj = fight_bets_summary(mainObj,operatorid,datefrom,dateto);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("betting_sabong_report")){
         String accountid = request.getParameter("accountid");
@@ -46,7 +46,7 @@ try{
         String dateto = request.getParameter("dateto");
 
         //mainObj = LoadSabongBetsReport(mainObj, accountid, datefrom, dateto);
-        out.print(Success(mainObj, "data synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
         
     }else{
         out.print(Error(mainObj, globalInvalidRequest, "404"));

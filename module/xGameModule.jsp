@@ -18,13 +18,14 @@
 }
 %>
 
-<%!public void ExecutePostBet(String eventid, String sessionid, String appreference, String operatorid, String accountid, String accountname, String bet_choice, double bet_amount, boolean banker, boolean dummy) {
+<%!public void ExecutePostBet(String eventid, String sessionid, String appreference, String operatorid, String accountid, String accountname, String identifier, String bet_choice, double bet_amount, boolean banker, boolean dummy) {
     EventInfo event = new EventInfo(eventid, false);
 
     String transactionno = getSystemSeriesID("series_bets");
     String Command = " set operatorid='"+operatorid+"', "
                             + " accountid='"+accountid+"', "
                             + " accountname='"+ rchar(accountname) +"',"
+                            + " identifier='"+ identifier +"',"
                             + " banker="+ banker +","
                             + " dummy="+ dummy +","
                             + " sessionid='"+sessionid+"', "

@@ -1,3 +1,23 @@
+<%!public class OperatorInfo{
+    public String operatorid, companyname, country, currency;
+
+    public OperatorInfo(String appkey){
+        try{
+            ResultSet rst = null; 
+            rst =  SelectQuery("select companyid, companyname, country, currency from tbloperator where appkey='"+appkey+"'");
+            while(rst.next()){
+                this.operatorid = rst.getString("companyid");
+                this.companyname = rst.getString("companyname");
+                this.country = rst.getString("country");
+                this.currency = rst.getString("currency");
+            }
+            rst.close();
+        }catch(SQLException e){
+            logError("class-company-info",e.toString());
+        }
+    }
+}%>
+
 <%!public class EventInfo{
     public String arena, arenaid, eventkey, result, fightkey, fightnumber, status, postingdate;
     public String event_title, live_mode, live_stream_title, live_stream_url, live_youtube_id, live_sourceid;

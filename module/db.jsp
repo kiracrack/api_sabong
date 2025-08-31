@@ -57,6 +57,7 @@ public String GlobalPusherAppChannel = "";
 public double GlobalPlasadaBase = 0;
 public double GlobalPlasadaRate = 0;
 
+public String globaApiValidMessage = "request accepted";
 public String globalInvalidRequest = "Invalid request command code";
 public String globalMaintainanceMessage = "Server is currently undergoing maintenance. please try again later";
 public String globalExpiredSessionMessage = "System detected new device login! Your session from this device will be disconnected. <br><br> If this wasn't you, or if you believe that an unauthorized person has accessed your account, please reset your password right away.";

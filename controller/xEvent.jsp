@@ -28,23 +28,23 @@ try{
 
         mainObj = getEventInfo(mainObj, eventid);
         mainObj = getBetSummary(mainObj, event.fightkey);
-        out.print(Success(mainObj, "data synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
     
     }else if(x.equals("arena")){ 
         mainObj = getActiveArena(mainObj);
-        out.print(Success(mainObj, "data synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("video_source")){ 
         mainObj = getVideoSource(mainObj);
-        out.print(Success(mainObj, "data synchronized")); 
+        out.print(Success(mainObj, globaApiValidMessage)); 
 
     }else if(x.equals("message_template")){ 
         mainObj = getMessageTemplate(mainObj);
-        out.print(Success(mainObj, "data synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("announcement")){ 
         mainObj = getAnnouncement(mainObj);
-        out.print(Success(mainObj, "data synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
     
     }else if(x.equals("timer_settings")){ 
         String arenaid = request.getParameter("arenaid");

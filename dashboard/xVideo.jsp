@@ -24,7 +24,7 @@ try{
 
     if(x.equals("load_video")){
         mainObj = LoadVideos(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
 
     }else if(x.equals("set_video_youtube_info")){

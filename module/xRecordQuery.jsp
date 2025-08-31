@@ -17,3 +17,18 @@
     return CountQry("tblcontroller", "deviceid='"+deviceid+"' and blocked=1") > 0;
  }
  %>
+
+<%!public boolean isOperatorExist(String appkey) {
+    return CountQry("tbloperator", "appkey='"+appkey+"'") > 0;
+ }
+%>
+
+<%!public boolean isOperatorActived(String appkey) {
+    return CountQry("tbloperator", "appkey='"+appkey+"' and actived=1") > 0;
+ }
+%>
+
+<%!public boolean isOperatorBlocked(String appkey) {
+    return CountQry("tbloperator", "appkey='"+appkey+"' and blocked=1") > 0;
+ }
+%>

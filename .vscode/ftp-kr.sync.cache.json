@@ -8,6 +8,7 @@
     },
     "META-INF": {},
     "WEB-INF": {},
+    "app": {},
     "controller": {},
     "dashboard": {},
     "index.jsp": {

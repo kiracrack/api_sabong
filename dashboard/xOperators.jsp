@@ -23,14 +23,15 @@ try{
     if(x.equals("load_operator")){
         mainObj = getOperators(mainObj);
         mainObj = getSelectOperator(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
     
     }else if(x.equals("select_operator")){
         mainObj = getSelectOperator(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("set_operator_info")){
         String mode = request.getParameter("mode");
+        String appkey = request.getParameter("appkey");
         String companyid = request.getParameter("companyid");
         String companyname = request.getParameter("companyname");
         String shortname = request.getParameter("shortname");
@@ -45,7 +46,8 @@ try{
             return;
         }
         
-        String query = "companyname='"+rchar(companyname)+"', "
+        String query = "appkey='"+appkey+"', "
+                    + " companyname='"+rchar(companyname)+"', "
                     + " shortname='"+rchar(shortname)+"', "
                     + " website='"+rchar(website)+"', "
                     + " email='"+rchar(email)+"', "

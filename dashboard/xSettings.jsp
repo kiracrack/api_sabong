@@ -23,7 +23,7 @@ try{
     if(x.equals("load_settings")){
         mainObj = getGeneralSettings(mainObj);
         mainObj = getDummaryAccount(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("update_settings")){
         String draw_rate = request.getParameter("draw_rate");

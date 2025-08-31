@@ -22,7 +22,7 @@ try{
 
     if(x.equals("load_dummy_Account")){
         mainObj = LoadDummyNames(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("upload_dummy_name")){
         String file_content = request.getParameter("file_content");
@@ -41,7 +41,7 @@ try{
 
     }else if(x.equals("load_getDummySettings")){
         mainObj = LoadDummySettings(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
     
     }else if(x.equals("set_getDummySettings")){
         String am_amt_from = request.getParameter("am_amt_from");

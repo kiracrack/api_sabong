@@ -47,7 +47,6 @@ try{
         boolean betWatcherExecuted = false;
         if(status.equals("cancelled")){
             ExecuteCancelledFight(sessionid, deviceid, arenaid, eventid, eventkey, fightkey, postingdate, fightnumber, "");
-            apiObj = api_total_bonus(apiObj);
             apiObj = api_result_info(apiObj, eventid);
             
             String new_plasada = GenerateNewPlasada();
@@ -82,7 +81,7 @@ try{
                         if(betToAdd <= gs.betwatchermaxamount){
                             RandomDummyAccount dummy = new RandomDummyAccount();
                             ExecuteRecordAutoBet(eventid, fightkey, fightnumber, totalBetMeron, totalBetWala, betDifference, "M", randomBet, betToAdd);
-                            ExecutePostBet(eventid, sessionid, sessionid, "", gs.betwacherid, dummy.dummyname, "M",Val(betToAdd), true, false);
+                            ExecutePostBet(eventid, sessionid, sessionid, "", gs.betwacherid, dummy.dummyname, gs.betwacherid, "M",Val(betToAdd), true, false);
                             betWatcherExecuted = true;
                         }
                     }
@@ -95,7 +94,7 @@ try{
                         if(betToAdd <= gs.betwatchermaxamount){
                             RandomDummyAccount dummy = new RandomDummyAccount();
                             ExecuteRecordAutoBet(eventid, fightkey, fightnumber, totalBetMeron, totalBetWala, betDifference, "W", randomBet, betToAdd);
-                            ExecutePostBet(eventid, sessionid, sessionid, "", gs.betwacherid, dummy.dummyname, "W", Val(betToAdd), true, false);
+                            ExecutePostBet(eventid, sessionid, sessionid, "", gs.betwacherid, dummy.dummyname, gs.betwacherid, "W", Val(betToAdd), true, false);
                             betWatcherExecuted = true;
                         }
                     }
@@ -331,7 +330,6 @@ try{
 
         apiObj = api_event_info(apiObj, eventid);
         apiObj = api_result_info(apiObj, eventid);
-        apiObj = api_total_bonus(apiObj);
         PusherPost(eventid, apiObj);
         
         RefundErrorBets(arenaid, newFightkey);
@@ -415,7 +413,7 @@ try{
         if(finalBets.oddMeron > 1.7){
             double random = Double.parseDouble(RandomBetBalancer()) / 100;
             double balancer = finalBets.totalMeron * random;
-            ExecutePostBet(eventid, sessionid, sessionid, "", dummy_account_1, dummy.dummyname, "M", Val(balancer), false, true);
+            ExecutePostBet(eventid, sessionid, sessionid, "", dummy_account_1, dummy.dummyname, dummy_account_1, "M", Val(balancer), false, true);
         }
     }
 
@@ -423,7 +421,7 @@ try{
         if(finalBets.oddWala > 1.7){
             double random = Double.parseDouble(RandomBetBalancer()) / 100;
             double balancer = finalBets.totalWala * random;
-            ExecutePostBet(eventid, sessionid, sessionid, "", dummy_account_2, dummy.dummyname,  "W", Val(balancer), false, true);
+            ExecutePostBet(eventid, sessionid, sessionid, "", dummy_account_2, dummy.dummyname, dummy_account_2,  "W", Val(balancer), false, true);
         }
     }
    

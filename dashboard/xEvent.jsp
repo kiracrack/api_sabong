@@ -22,7 +22,7 @@ try{
       
     if(x.equals("load_arena")){
         mainObj = getArenaList(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("set_arena_info")){
         String mode = request.getParameter("mode");
@@ -67,7 +67,7 @@ try{
         String dateto = request.getParameter("dateto");
 
         mainObj = LoadEvents(mainObj, arenaid, datefrom, dateto);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else{
         out.print(Error(mainObj, globalInvalidRequest, "404"));

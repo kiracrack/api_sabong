@@ -11,7 +11,7 @@
                 if(!columns.getColumnLabel(i).equals("password")){
                     if(columns.getColumnType(i) == -7){
                         obj.put(columns.getColumnLabel(i), rst.getBoolean(columns.getColumnLabel(i)));
-                    }else if(columns.getColumnType(i) == 8){
+                    }else if(columns.getColumnType(i) == 8  || columns.getColumnType(i) == -5){
                         obj.put(columns.getColumnLabel(i), rst.getDouble(columns.getColumnLabel(i)));
                     }else{
                         String data = rst.getString(columns.getColumnLabel(i)); if(data == null){ data = "";}
@@ -45,7 +45,7 @@
             for (int i = 1; i < columns.getColumnCount() + 1; i++) {
                 if(columns.getColumnType(i) == -7){
                     mainObj.put(columns.getColumnLabel(i), rst.getBoolean(columns.getColumnLabel(i)));
-                }else if(columns.getColumnType(i) == 8){
+                }else if(columns.getColumnType(i) == 8 ||  columns.getColumnType(i) == -5){
                     mainObj.put(columns.getColumnLabel(i), rst.getDouble(columns.getColumnLabel(i)));
                 }else{
                     String data = rst.getString(columns.getColumnLabel(i)); if(data == null){ data = "";}

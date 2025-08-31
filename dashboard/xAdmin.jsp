@@ -22,7 +22,7 @@ try{
 
     if(x.equals("load_admin")){
         mainObj = LoadAdminAccounts(mainObj);
-        out.print(Success(mainObj, "Successfull Synchronized"));
+        out.print(Success(mainObj, globaApiValidMessage));
 
     }else if(x.equals("delete_admin")){
         String id = request.getParameter("id");
