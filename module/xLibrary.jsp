@@ -158,6 +158,40 @@
 }
 %>
 
+<%!public String AttachedImage(ServletContext application, String imageString, String filename) {
+     String PhotoUrl = "";
+    if(imageString.length() > 0) {
+        String directory = application.getRealPath("/media/");
+        File theDir = new File(directory);
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
+        
+        String PhotoLocation = directory + "/" + filename;
+        PhotoUrl = GlobalHostName + "/media/"+filename;
+        byte[] data = DatatypeConverter.parseBase64Binary(imageString);
+        File file= new File(PhotoLocation);
+        
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+            outputStream.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+            PhotoUrl = "";
+        }
+    }else{
+         PhotoUrl = "";
+    }
+    return PhotoUrl;
+}
+%>
+
+<%!public void DeleteImage(ServletContext application, String filename) {
+    String imgfile = application.getRealPath("/media/" + filename);
+    File theFile = new File(imgfile);
+    if(theFile.exists()) theFile.delete();
+}
+%>
+
 <%!public void LogActivity(String userid, String details) {
     ExecuteQuery("insert into tblactivitylogs set datetrn=current_timestamp, userid='"+userid+"',details=lcase('"+rchar(details.toString())+"')");
 }

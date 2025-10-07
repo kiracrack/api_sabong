@@ -37,7 +37,7 @@ try{
 
 }catch (Exception e){
       out.print(Error(mainObj, e.toString(), "400"));
-      logError("controller-x-event",e.toString());
+      logError("app-x-arena",e.toString());
 }
 %>
 

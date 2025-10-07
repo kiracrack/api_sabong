@@ -28,24 +28,17 @@ try{
         String mode = request.getParameter("mode");
         String arenaid = request.getParameter("arenaid");
         String arenaname = request.getParameter("arenaname");
-        String main_banner_url = request.getParameter("main_banner_url");
-        String vertical_banner = request.getParameter("vertical_banner");
-        String vertical_banner_name = request.getParameter("vertical_banner_name");
+        String arenatitle = request.getParameter("arenatitle");
+        String arenadesc = request.getParameter("arenadesc");
+        String banner_url = request.getParameter("banner_url");
         boolean active = Boolean.parseBoolean(request.getParameter("active"));
         boolean opposite_bet = Boolean.parseBoolean(request.getParameter("opposite_bet"));
-        String vertical_banner_url = "";
 
-        if(vertical_banner.length() > 10){
-            vertical_banner_name = (vertical_banner_name.length() > 0 ? vertical_banner_name : UUID.randomUUID().toString());
-            ServletContext serveapp = request.getSession().getServletContext();
-            vertical_banner_url = AttachedPhoto(serveapp, "arena", vertical_banner, vertical_banner_name);
-        }
-    
         if (mode.equals("add")){
-            ExecuteQuery("insert into tblarena set arenaname='" +rchar(arenaname)+ "', active=" + active + ", opposite_bet=" + opposite_bet + ", main_banner_url='"+main_banner_url+"' " + (vertical_banner.length() > 0 ? ", vertical_banner_name='"+vertical_banner_name+"', vertical_banner_url='"+vertical_banner_url+"' " : ""));
+            ExecuteQuery("insert into tblarena set arenaname='" +rchar(arenaname)+ "', arenatitle='" +rchar(arenatitle)+ "', arenadesc='" +rchar(arenadesc)+ "', active=" + active + ", opposite_bet=" + opposite_bet + ", banner_url='"+banner_url+"'");
             mainObj.put("message", " Arena successfully added!");
         }else{
-            ExecuteQuery("UPDATE tblarena set arenaname='" +rchar(arenaname)+ "', active=" + active + ", opposite_bet=" + opposite_bet + ", main_banner_url='"+main_banner_url+"' " + (vertical_banner.length() > 0 ? ", vertical_banner_name='"+vertical_banner_name+"', vertical_banner_url='"+vertical_banner_url+"' " : "") + " where arenaid='"+arenaid+"'");
+            ExecuteQuery("UPDATE tblarena set arenaname='" +rchar(arenaname)+ "', arenatitle='" +rchar(arenatitle)+ "', arenadesc='" +rchar(arenadesc)+ "', active=" + active + ", opposite_bet=" + opposite_bet + ", banner_url='"+banner_url+"' where arenaid='"+arenaid+"'");
             mainObj.put("message", "Arena successfully updated!");
         }
 

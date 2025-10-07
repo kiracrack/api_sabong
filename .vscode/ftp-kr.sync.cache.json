@@ -2,21 +2,23 @@
   "ftp://obslabz.com:21@sbg@obslabz.com": {
     ".ftpquota": {
       "type": "-",
-      "size": 7,
+      "size": 13,
       "lmtime": 0,
-      "modified": false
+      "modified": true
     },
     "META-INF": {},
     "WEB-INF": {},
     "app": {},
     "controller": {},
     "dashboard": {},
+    "images": {},
     "index.jsp": {
       "type": "-",
       "size": 4964,
       "lmtime": 0,
       "modified": false
     },
+    "media": {},
     "module": {}
   },
   "$version": 1

@@ -5,7 +5,7 @@
  %>
 
  <%!public JSONObject api_active_arena(JSONObject mainObj) {
-    mainObj = DBtoJson(mainObj, "arena", "select arenaid, main_banner_url, arenaname, ifnull((select fightnumber from tblevent where arenaid=a.arenaid and event_active=1),'') as fightnumber, "
+    mainObj = DBtoJson(mainObj, "arena", "select arenaid, banner_url, arenaname,arenatitle, arenadesc, ifnull((select fightnumber from tblevent where arenaid=a.arenaid and event_active=1),'') as fightnumber, "
               + " ifnull((select eventid from tblevent where arenaid=a.arenaid and event_active=1),'') as eventid, "
               + " ifnull((select date_format(event_date, '%W %M %d, %Y') from tblevent where arenaid=a.arenaid and event_active=1),'') as eventdate "
               + " from tblarena as a where active=1");
@@ -20,7 +20,7 @@
  %>
 
  <%!public JSONObject api_arena_info(JSONObject mainObj, String arenaid) {
-    mainObj = DBtoJson(mainObj, "arena", "select arenaid, main_banner_url,vertical_banner_url, arenaname, opposite_bet from tblarena where arenaid='"+arenaid+"'");
+    mainObj = DBtoJson(mainObj, "arena", "select arenaid, banner_url, arenaname, opposite_bet from tblarena where arenaid='"+arenaid+"'");
     return mainObj;
   }
  %>

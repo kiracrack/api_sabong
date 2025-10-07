@@ -30,12 +30,15 @@ try{
 
     if(x.equals("event")){ 
         String eventid = request.getParameter("eventid");
+       
+        //ArenaInfo arena = new ArenaInfo(event.arenaid);
+        
+        if(!isEventActived(eventid)){
+            out.print(Status(mainObj, "ERROR", "Event you are looking for is not available", "403"));
+            return;
+        }
+
         EventInfo event = new EventInfo(eventid, false);
-        ArenaInfo arena = new ArenaInfo(event.arenaid);
-
-        OperatorInfo op = new OperatorInfo(appkey);
-        String accountid = op.operatorid + userid;
-
         mainObj.put("plasada", GlobalPlasadaRate);
        
         mainObj = api_event_info(mainObj, eventid);
@@ -44,7 +47,7 @@ try{
         mainObj = api_result_info(mainObj, eventid);
         mainObj = api_arena_info(mainObj, event.arenaid);
         mainObj = api_fight_summary(mainObj, event.fightkey);
-        mainObj = api_current_fight_bet(mainObj, accountid, event.fightkey);
+        mainObj = api_current_fight_bet(mainObj, userid, event.fightkey);
         
         out.print(Success(mainObj, globaApiValidMessage));
 
@@ -55,7 +58,7 @@ try{
 
 }catch (Exception e){
       out.print(Error(mainObj, e.toString(), "400"));
-      logError("controller-x-event",e.toString());
+      logError("app-x-event",e.toString());
 }
 %>
 

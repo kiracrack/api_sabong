@@ -242,15 +242,15 @@
 }%>
  
 <%!public class ArenaInfo{
-    public String arenaname, main_banner_url;
+    public String arenaname, banner_url;
     public boolean opposite_bet;
     public ArenaInfo(String arenaid){
         try{
             ResultSet rst = null; 
-            rst =  SelectQuery("select arenaname, main_banner_url, opposite_bet from tblarena where arenaid='"+arenaid+"'");
+            rst =  SelectQuery("select arenaname, banner_url, opposite_bet from tblarena where arenaid='"+arenaid+"'");
             while(rst.next()){
                 this.arenaname = rst.getString("arenaname");
-                this.main_banner_url = rst.getString("main_banner_url");
+                this.banner_url = rst.getString("banner_url");
                 this.opposite_bet = rst.getBoolean("opposite_bet");
             }
             rst.close();
@@ -408,6 +408,22 @@
             rst.close();
         }catch(SQLException e){
             logError("class-active-bonus",e.toString());
+        }
+    }
+}%>
+
+<%!public class ImageInfo{
+    public String filename;
+    public ImageInfo(String id){
+        try{
+            ResultSet rst = null; 
+            rst =  SelectQuery("select * from tblimages where id='"+id+"'");
+            while(rst.next()){
+                this.filename = rst.getString("filename") +  rst.getString("extension");
+            }
+            rst.close();
+        }catch(SQLException e){
+            logError("class-image-info",e.toString());
         }
     }
 }%>

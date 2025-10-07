@@ -28,6 +28,11 @@
  }
 %>
 
+<%!public boolean isEventActived(String eventid) {
+    return CountQry("tblevent", "eventid='"+eventid+"' and event_active=1") > 0;
+ }
+%>
+
 <%!public boolean isOperatorBlocked(String appkey) {
     return CountQry("tbloperator", "appkey='"+appkey+"' and blocked=1") > 0;
  }

@@ -94,6 +94,50 @@ try{
         mainObj = LoadMissingBetLogs(mainObj, datefrom, dateto);
         out.print(Success(mainObj, globaApiValidMessage)); 
 
+     }else if(x.equals("load_images")){
+        mainObj.put("status", "OK");
+        mainObj = LoadImages(mainObj);
+        mainObj.put("message", "Successfull Synchronized");
+        out.print(mainObj);
+
+    }else if(x.equals("upload_image")){
+        String filename = request.getParameter("filename");
+        String extension = request.getParameter("extension");
+        String imagebinary = request.getParameter("imagebinary");
+         
+        if(isImageExists(filename)){
+            mainObj.put("status", "ERROR");
+            mainObj.put("message","Filename is already exists!");
+            mainObj.put("errorcode", "101");
+            out.print(mainObj);
+            return;
+        }
+
+        ServletContext serveapp = request.getSession().getServletContext();
+        String imageurl = AttachedImage(serveapp, imagebinary, filename + extension);
+        
+        ExecuteQuery("insert into tblimages set filename='"+filename+"', extension='"+extension+"', imageurl='"+imageurl+"'");
+
+        mainObj.put("status", "OK");
+        mainObj = LoadImages(mainObj);
+        mainObj.put("message", "Image successfully uploaded");
+        out.print(mainObj);
+
+     }else if(x.equals("delete_image")){
+        String id = request.getParameter("id");
+        
+        ImageInfo img = new ImageInfo(id);
+        ServletContext serveapp = request.getSession().getServletContext();
+        DeleteImage(serveapp, img.filename);
+        
+        ExecuteQuery("DELETE from tblimages where id='"+id+"'");
+
+        mainObj.put("status", "OK");
+        mainObj = LoadImages(mainObj);
+        mainObj.put("message", "Image successfully deleted");
+        out.print(mainObj);
+
+
     }else{
         out.print(Error(mainObj, globalInvalidRequest, "404"));
     }
@@ -182,5 +226,17 @@ try{
         ExecuteResult("INSERT INTO tblfightbets2 (operatorid,accountid,accountname,banker,dummy,sessionid,appreference,arenaid,eventid,eventkey,fightkey,fightnumber,postingdate,transactionno,bet_choice,bet_amount,result,win,odd,win_amount,lose_amount,payout_amount,plasada,payback_rate,payback_total,winloss,datetrn,cancelled,cancelledreason) " 
             + " SELECT operatorid,accountid,accountname,banker,dummy,sessionid,appreference,arenaid,eventid,eventkey,fightkey,fightnumber,postingdate,transactionno,bet_choice,bet_amount,result,win,odd,win_amount,lose_amount,payout_amount,plasada,payback_rate,payback_total,winloss,datetrn,cancelled,cancelledreason FROM tblfightbets where fightkey='"+fightkey+"' and dummy=0");
     }
+}
+%>
+
+<%!public boolean isImageExists(String filename) {
+    return CountQry("tblimages", "filename='"+filename+"'") > 0;
+  }
+%>
+
+
+<%!public JSONObject LoadImages(JSONObject mainObj) {
+    mainObj = DBtoJson(mainObj, "images", "select * from tblimages");
+    return mainObj;
 }
 %>

@@ -39,6 +39,7 @@ try{
         String email = request.getParameter("email");
         String whatsapp = request.getParameter("whatsapp");
         String messenger = request.getParameter("messenger");
+        String callback_url = request.getParameter("callback_url");
         boolean active = Boolean.parseBoolean(request.getParameter("active"));
 
         if (CountQry("tbloperator", "companyname='"+companyname+"'  and companyid<>'"+companyid+"'") > 0) {
@@ -53,6 +54,7 @@ try{
                     + " email='"+rchar(email)+"', "
                     + " whatsapp='"+whatsapp+"', " 
                     + " messenger='"+messenger+"', "
+                    + " callback_url='"+callback_url+"', "
                     + " actived="+active+"";
 
         if (mode.equals("add")){
